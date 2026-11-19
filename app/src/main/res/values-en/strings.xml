@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">nxnative android</string>
+
+    <string name="terms_title">Terms of use and responsibility</string>
+    <string name="terms_body">To use this application you must provide your own copy of the game (a .nsp file) and your key file (prod.keys). This application does not include, download or distribute games or keys.\n\nBy tapping \"I accept and continue\", you declare and confirm that:\n\n1. the ROM (.nsp) and prod.keys were obtained by you legally, from a console and a copy of the game that you own;\n2. you are solely responsible for the use of these files and will not share or distribute them;\n3. this is an independent project, with no affiliation with Nintendo, Warner Bros. Games, Avalanche Software or any other company.</string>
+    <string name="terms_checkbox">I have read and agree to the terms above.</string>
+    <string name="terms_refuse">Decline</string>
+    <string name="terms_accept">I accept and continue</string>
+
+    <string name="tab_library">Library</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_logs">Diagnostics</string>
+
+    <string name="library_subtitle">Games prepared on this device. Everything stays in the app private storage.</string>
+    <string name="library_empty_title">No game imported</string>
+    <string name="library_empty_body">Choose your .nsp file and your prod.keys. The app validates the NSP structure and the required key generation before copying the game into private storage.</string>
+    <string name="legal_note">You must own the game copy and the keys. Nothing is downloaded from the internet. Independent project, not affiliated with Nintendo or any publisher.</string>
+    <string name="import_action">Import</string>
+
+    <string name="status_ready">ready</string>
+    <string name="status_validated">validated</string>
+    <string name="game_details">%1$s · key generation %2$d · imported %3$s</string>
+    <string name="play">Play</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="delete_title">Delete imported data?</string>
+    <string name="delete_body">This removes the copy of %1$s from the app storage. The original ROM and keys are not touched.</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="import_title">Import a game</string>
+    <string name="import_body">Select the ROM (.nsp) and the prod.keys file. title.keys is optional (not needed for regular games).</string>
+    <string name="pick_rom">Game ROM (.nsp)</string>
+    <string name="pick_prod">prod.keys</string>
+    <string name="pick_title_keys">title.keys (optional)</string>
+    <string name="choose">Choose</string>
+    <string name="not_selected">no file selected</string>
+    <string name="error_title">Import failed</string>
+    <string name="report_title">ROM check</string>
+    <string name="report_body">Title ID %1$s\nRequired key generation: %2$d\nSize: %3$s\nNSP entries: %4$d\nKeys loaded: %5$d</string>
+    <string name="missing_keys_title">Not enough keys (generation %1$d; your prod.keys stops at generation %2$d)</string>
+    <string name="missing_keys_body">These keys are missing from your prod.keys:</string>
+    <string name="missing_keys_stop">Nothing was copied. Update prod.keys from your own console to a version that includes the required generation and try again. This app does not download keys.</string>
+    <string name="import_done_title">Import complete</string>
+    <string name="import_done_body">%1$s (%2$s) is in the app private storage.</string>
+    <string name="prepare_pending">Preparing the game (extraction, decryption and module rewriting) is the project next milestone (M3) and is not part of this version.</string>
+    <string name="open_library">Open the library</string>
+    <string name="import_scope_note">This version validates the ROM and keys and copies the file once. It supports .nsp; .nsz, .xcz and .xci are rejected with a clear message.</string>
+
+    <string name="settings_resolution">Render resolution</string>
+    <string name="settings_fps">Frame limit</string>
+    <string name="settings_touch">Touch controls</string>
+    <string name="settings_show_fps">Show frame counter</string>
+    <string name="settings_storage">Storage</string>
+    <string name="storage_used">%1$s used by imported games · %2$s free</string>
+    <string name="delete_all">Delete all imported data</string>
+    <string name="delete_all_title">Delete all data?</string>
+    <string name="delete_all_body">This removes every game copy from the app storage. The original ROMs and keys are not touched.</string>
+    <string name="settings_runtime_note">These options will apply once the game runtime (M4) is integrated. Today the game screen only shows the Vulkan presentation path and the GPU diagnostics.</string>
+
+    <string name="logs_note">Names, sizes, Title IDs and error codes only. Never key values or game content.</string>
+    <string name="export_logs">Export</string>
+    <string name="clear_logs">Clear</string>
+    <string name="refresh">Refresh</string>
+    <string name="export_ok">Log exported (%1$d lines)</string>
+    <string name="export_failed">Export failed: %1$s</string>
+
+    <string name="phase_keys">Copying prod.keys…</string>
+    <string name="phase_analyze">Reading and validating the NSP…</string>
+    <string name="phase_copy">Copying the NSP into private storage…</string>
+
+    <string name="err_xci">This is an .xci (cartridge) dump. Convert it to .nsp and try again.</string>
+    <string name="err_magic">The file is not an NSP (PFS0).</string>
+    <string name="err_ticket">The NSP has no ticket, or the ticket is unreadable. It does not look like a complete game dump.</string>
+    <string name="err_truncated">The file is incomplete or corrupted (NSP table past the end of the file).</string>
+    <string name="err_entries">The NSP entry table is invalid.</string>
+    <string name="err_io">Could not read the selected file.</string>
+    <string name="err_generic">Unexpected failure while validating the file.</string>
+    <string name="err_not_nsp">Choose a file with the .nsp extension.</string>
+    <string name="err_keys_format">Invalid key file. The expected format is \"name = hex\", one key per line.</string>
+    <string name="err_space">Not enough space: about %1$s are needed and %2$s are free. Free up space and try again.</string>
+
+    <string name="player_starting">Starting Vulkan…</string>
+    <string name="player_running">Vulkan active</string>
+    <string name="player_failed">Vulkan start failed</string>
+    <string name="player_runtime_notice">Game runtime not integrated in this version — this is the device Vulkan diagnostics.</string>
+    <string name="player_exit">Exit</string>
+</resources>

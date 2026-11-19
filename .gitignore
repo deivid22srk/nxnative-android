@@ -1,0 +1,35 @@
+# Game files and keys — never commit these
+*.nsp
+*.nsz
+*.xci
+*.xcz
+*.nca
+*.ncz
+*.nup
+*.keys
+prod.keys
+title.keys
+*.zip
+local_assets/
+hl.nsp
+**/exefs/
+**/romfs/
+*.tik
+*.cert
+*.cnmt.nca
+# debugging output
+.gamedump/
+out/
+
+# Build / IDE
+.gradle/
+build/
+.cxx/
+local.properties
+*.iml
+.idea/
+*.apk
+*.aab
+*.jks
+*.keystore
+.DS_Store

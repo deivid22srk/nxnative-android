@@ -1,0 +1,100 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-tests:
+    name: native core (host tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run the host test
+        run: |
+          chmod +x tools/test_native.sh
+          bash tools/test_native.sh
+
+  build:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit repository (no game files, no keys)
+        run: |
+          chmod +x tools/audit_no_assets.sh
+          bash tools/audit_no_assets.sh
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install SDK, NDK and CMake at pinned versions
+        run: |
+          sdkmanager --install \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
+          yes | sdkmanager --licenses >/dev/null || true
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Native core tests
+        run: bash tools/test_native.sh
+
+      - name: Build debug and release APKs
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug assembleRelease --stacktrace
+
+      - name: Sign the release APK with a throwaway debug keystore
+        run: |
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          keytool -genkeypair -v \
+            -keystore "$RUNNER_TEMP/ci-debug.keystore" \
+            -storepass android -keypass android \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+          "$BT/zipalign" -f 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            "$RUNNER_TEMP/app-release-aligned.apk"
+          "$BT/apksigner" sign \
+            --ks "$RUNNER_TEMP/ci-debug.keystore" \
+            --ks-pass pass:android --key-pass pass:android \
+            --min-sdk-version 29 \
+            --out app/build/outputs/apk/release/app-release.apk \
+            "$RUNNER_TEMP/app-release-aligned.apk"
+
+      - name: Verify APK contents (fail on game files, keys, wrong ABI)
+        run: |
+          bash tools/verify_apk.sh app/build/outputs/apk/debug/app-debug.apk libnxnative_android.so
+          bash tools/verify_apk.sh app/build/outputs/apk/release/app-release.apk libnxnative_android.so
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxnative-android-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxnative-android-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">nxnative android</string>
+
+    <!-- Terms of use: mandatory, versioned. Bump TERMS_VERSION in Terms.kt when this text changes. -->
+    <string name="terms_title">Termos de uso e responsabilidade</string>
+    <string name="terms_body">Para usar este aplicativo você precisa fornecer a sua própria cópia do jogo (arquivo .nsp) e o seu arquivo de chaves (prod.keys). Este aplicativo não inclui, não baixa e não distribui jogos nem chaves.\n\nAo tocar em \"Aceito e continuar\", você declara e confirma que:\n\n1. a ROM (.nsp) e o prod.keys foram obtidos por você de forma legal, a partir de um console e de uma cópia do jogo que você possui;\n2. você é o único responsável pelo uso desses arquivos e não irá compartilhá-los ou distribuí-los;\n3. este é um projeto independente, sem qualquer afiliação com a Nintendo, a Warner Bros. Games, a Avalanche Software ou outras empresas.</string>
+    <string name="terms_checkbox">Li e concordo com os termos acima.</string>
+    <string name="terms_refuse">Recusar</string>
+    <string name="terms_accept">Aceito e continuar</string>
+
+    <string name="tab_library">Biblioteca</string>
+    <string name="tab_import">Importar</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="tab_logs">Diagnóstico</string>
+
+    <string name="library_subtitle">Jogos preparados neste aparelho. Tudo fica no armazenamento privado do aplicativo.</string>
+    <string name="library_empty_title">Nenhum jogo importado</string>
+    <string name="library_empty_body">Escolha o seu arquivo .nsp e o seu prod.keys. O aplicativo valida a estrutura do NSP, a geração de chaves exigida e só então copia o jogo para o armazenamento privado.</string>
+    <string name="legal_note">Você precisa possuir a cópia do jogo e as chaves. Nada é baixado da internet. Projeto independente, sem afiliação com a Nintendo ou com as publicadoras.</string>
+    <string name="import_action">Importar</string>
+
+    <string name="status_ready">pronto</string>
+    <string name="status_validated">validado</string>
+    <string name="game_details">%1$s · chaves geração %2$d · importado em %3$s</string>
+    <string name="play">Jogar</string>
+    <string name="delete_confirm">Apagar</string>
+    <string name="delete_title">Apagar dados importados?</string>
+    <string name="delete_body">Isto remove a cópia de %1$s do armazenamento do aplicativo. A ROM e as chaves originais não são tocadas.</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="import_title">Importar um jogo</string>
+    <string name="import_body">Selecione a ROM (.nsp) e o arquivo prod.keys. Um title.keys é opcional (não é necessário para jogos comuns).</string>
+    <string name="pick_rom">ROM do jogo (.nsp)</string>
+    <string name="pick_prod">prod.keys</string>
+    <string name="pick_title_keys">title.keys (opcional)</string>
+    <string name="choose">Escolher</string>
+    <string name="not_selected">nenhum arquivo selecionado</string>
+    <string name="error_title">Não foi possível importar</string>
+    <string name="report_title">Verificação da ROM</string>
+    <string name="report_body">Title ID %1$s\nGeração de chaves exigida: %2$d\nTamanho: %3$s\nEntradas no NSP: %4$d\nChaves carregadas: %5$d</string>
+    <string name="missing_keys_title">Chaves insuficientes (geração %1$d; seu prod.keys vai até a geração %2$d)</string>
+    <string name="missing_keys_body">Faltam estas chaves no seu prod.keys:</string>
+    <string name="missing_keys_stop">Nada foi copiado. Atualize o seu prod.keys a partir do seu próprio console para uma versão que inclua a geração exigida e tente de novo. Este aplicativo não baixa chaves.</string>
+    <string name="import_done_title">Importação concluída</string>
+    <string name="import_done_body">%1$s (%2$s) está no armazenamento privado do aplicativo.</string>
+    <string name="prepare_pending">A preparação do jogo (extração, descriptografia e reescrita dos módulos) é o próximo marco do projeto (M3) e ainda não está incluída nesta versão.</string>
+    <string name="open_library">Abrir a biblioteca</string>
+    <string name="import_scope_note">Esta versão valida a ROM e as chaves e copia o arquivo uma única vez. Suporta .nsp; .nsz, .xcz e .xci são rejeitados com uma mensagem clara.</string>
+
+    <string name="settings_resolution">Resolução de renderização</string>
+    <string name="settings_fps">Limite de quadros</string>
+    <string name="settings_touch">Controles de toque</string>
+    <string name="settings_show_fps">Mostrar contador de quadros</string>
+    <string name="settings_storage">Armazenamento</string>
+    <string name="storage_used">%1$s usados por jogos importados · %2$s livres</string>
+    <string name="delete_all">Apagar todos os dados importados</string>
+    <string name="delete_all_title">Apagar todos os dados?</string>
+    <string name="delete_all_body">Isto remove todas as cópias de jogos do armazenamento do aplicativo. As ROMs e chaves originais não são tocadas.</string>
+    <string name="settings_runtime_note">Estas opções serão aplicadas quando o runtime do jogo (M4) estiver integrado. Hoje a tela de jogo mostra apenas o caminho de apresentação Vulkan e o diagnóstico da GPU.</string>
+
+    <string name="logs_note">Somente nomes, tamanhos, Title IDs e códigos de erro. Nunca valores de chaves nem conteúdo do jogo.</string>
+    <string name="export_logs">Exportar</string>
+    <string name="clear_logs">Limpar</string>
+    <string name="refresh">Atualizar</string>
+    <string name="export_ok">Log exportado (%1$d linhas)</string>
+    <string name="export_failed">Falha ao exportar: %1$s</string>
+
+    <string name="phase_keys">Copiando prod.keys…</string>
+    <string name="phase_analyze">Lendo e validando o NSP…</string>
+    <string name="phase_copy">Copiando o NSP para o armazenamento privado…</string>
+
+    <string name="err_xci">Este é um dump .xci (cartucho). Converta para .nsp e tente de novo.</string>
+    <string name="err_magic">O arquivo não é um NSP (PFS0).</string>
+    <string name="err_ticket">O NSP não tem ticket ou o ticket está ilegível. Não parece um dump de jogo completo.</string>
+    <string name="err_truncated">O arquivo está incompleto ou corrompido (tabela do NSP fora do fim do arquivo).</string>
+    <string name="err_entries">A tabela de entradas do NSP é inválida.</string>
+    <string name="err_io">Não foi possível ler o arquivo selecionado.</string>
+    <string name="err_generic">Falha inesperada ao validar o arquivo.</string>
+    <string name="err_not_nsp">Escolha um arquivo com extensão .nsp.</string>
+    <string name="err_keys_format">Arquivo de chaves inválido. O formato esperado é \"nome = hex\", uma chave por linha.</string>
+    <string name="err_space">Espaço insuficiente: são necessários cerca de %1$s e há %2$s livres. Libere espaço e tente de novo.</string>
+
+    <string name="player_starting">Iniciando Vulkan…</string>
+    <string name="player_running">Vulkan ativo</string>
+    <string name="player_failed">Falha ao iniciar Vulkan</string>
+    <string name="player_runtime_notice">Runtime do jogo ainda não integrado nesta versão — isto é o diagnóstico de Vulkan do aparelho.</string>
+    <string name="player_exit">Sair</string>
+</resources>
