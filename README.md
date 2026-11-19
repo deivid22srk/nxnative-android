@@ -91,8 +91,8 @@ Nothing is uploaded, and the app has no `INTERNET` permission.
 
 This is an independent project, not affiliated with Nintendo, Warner Bros.
 Games, Avalanche Software or any other company. It ships no game assets, no
-keys and no publisher trademarks. You are responsible for using files you
-legally own. The Terms inside the app say the same thing and must be accepted
+keys and no publisher trademarks. You are responsible for the files you use
+and for having obtained them legally. The Terms inside the app say the same thing and must be accepted
 before importing anything.
 
 ## Credits / licences

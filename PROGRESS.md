@@ -6,8 +6,8 @@ Updated 2026-11-19.
 
 | Level | Meaning | Status |
 |---|---|---|
-| **L0** | CI builds the APK | see the Actions run linked in the final report |
-| **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented; native validation logic verified in the host test and against the user's real NSP header. UI not exercised on a physical device (no device available). |
+| **L0** | CI builds the APK | **done** — run [44558132809](https://github.com/deivid22srk/nxnative-android/actions/runs/44558132809): native tests, debug APK, CI-signed release APK, APK content verification. Downloaded and checked locally: `arm64-v8a` only, minSdk 29, targetSdk 35, no game/key entries. |
+| **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented; the validation core is verified by the host test in CI and was run against the user's real `hl.nsp` (title id `0100F7E00C70E000`, generation 16, three missing keys named). **Not exercised on a physical device**: no Android device is attached to this machine. |
 | L2 | Extraction + NSO rewrite completes on the device | **not verified / not implemented** |
 | L3 | Runtime reaches the game's first `main()` | **not verified / not implemented** |
 | L4 | First game frame via Vulkan | **not verified**. A standalone Vulkan present loop (clear + present) is implemented in the player shell; it is not the game's renderer. |
@@ -42,6 +42,9 @@ NCAs (generation `0x10`).
   ticket key generation `0x10`; supplied `prod.keys` covers `0x00..0x0E`.
   Reported to the user as a blocking condition instead of bypassing
   validation. No game data or key value left the machine.
+- 2026-11-19 — CI run 44558132809 green: `app-debug.apk` (25.7 MB) and
+  CI-signed `app-release.apk` (20.9 MB) uploaded; `tools/verify_apk.sh`
+  confirmed `arm64-v8a` only and no `.nsp`/`.keys`/`.nca` entries.
 - 2026-11-19 — host test (`tests/native/test_nsp.cpp`) builds a synthetic
   PFS0 in memory with a generation-`0x0A` ticket and checks: title ID, key
   generation, missing-key list, and that a key value never appears in the
