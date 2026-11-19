@@ -102,6 +102,13 @@ bool KeySet::has(const std::string& name) const {
     return values_.find(name) != values_.end();
 }
 
+bool KeySet::get(const std::string& name, std::vector<std::uint8_t>* out) const {
+    const auto it = values_.find(name);
+    if (it == values_.end()) return false;
+    if (out) *out = it->second;
+    return true;
+}
+
 int KeySet::maxGeneration(const std::string& prefix) const {
     int best = -1;
     const std::string head = prefix + "_";

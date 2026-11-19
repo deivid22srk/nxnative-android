@@ -21,6 +21,7 @@ class AppRepository(private val context: Context) {
         val TERMS_ACCEPTED_AT = longPreferencesKey("terms_accepted_at")
         val GAMES = stringPreferencesKey("games")
         val SETTINGS = stringPreferencesKey("settings")
+        val SELECTED_DRIVER = stringPreferencesKey("selected_driver")
     }
 
     data class TermsState(val acceptedVersion: Int, val acceptedAt: Long)
@@ -72,5 +73,14 @@ class AppRepository(private val context: Context) {
 
     suspend fun saveSettings(settings: GameSettings) {
         context.dataStore.edit { it[Keys.SETTINGS] = settings.toJson().toString() }
+    }
+
+    /** Empty means the system Vulkan driver. */
+    val selectedDriver: Flow<String> = context.dataStore.data.map {
+        it[Keys.SELECTED_DRIVER].orEmpty()
+    }
+
+    suspend fun selectDriver(id: String) {
+        context.dataStore.edit { it[Keys.SELECTED_DRIVER] = id }
     }
 }

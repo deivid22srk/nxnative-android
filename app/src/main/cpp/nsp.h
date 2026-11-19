@@ -28,6 +28,9 @@ struct NspInfo {
     std::string error;      // English fallback detail (no secrets)
     std::string magic;      // "PFS0"
     std::uint64_t fileSize = 0;
+    // Absolute offset of the first entry payload. NspEntry::offset is relative
+    // to this position, as stored in the PFS0 table.
+    std::uint64_t dataStart = 0;
     std::vector<NspEntry> entries;
     bool hasTicket = false;
     std::string ticketName;

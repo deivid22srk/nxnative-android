@@ -13,7 +13,13 @@ struct ANativeWindow;
 
 namespace nx2a {
 
-bool rendererStart(ANativeWindow* window, int width, int height, std::string* error);
+// driverDir/driverName empty: system Vulkan loader. Otherwise the named
+// driver library is loaded from driverDir through libadrenotools, using the
+// hook libraries in hookDir and tmpDir for writable scratch space.
+bool rendererStart(ANativeWindow* window, int width, int height,
+                   const std::string& hookDir, const std::string& driverDir,
+                   const std::string& driverName, const std::string& tmpDir,
+                   std::string* error);
 void rendererStop();
 std::string rendererStatsJson();
 void rendererInput(int action, float x, float y, int code);

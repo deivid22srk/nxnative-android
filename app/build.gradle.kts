@@ -62,6 +62,9 @@ android {
 
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}")
+        // libadrenotools installs its hook libraries from nativeLibraryDir,
+        // which only exists for extracted (legacy-packaged) native libs.
+        jniLibs.useLegacyPackaging = true
     }
 }
 

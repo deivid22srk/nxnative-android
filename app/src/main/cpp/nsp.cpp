@@ -87,6 +87,7 @@ bool inspectNsp(ByteSource& src, NspInfo* out) {
     const std::uint64_t tableBytes = static_cast<std::uint64_t>(count) * 0x18;
     const std::uint64_t stringTableOffset = 0x10 + tableBytes;
     const std::uint64_t dataStart = stringTableOffset + stringTableSize;
+    out->dataStart = dataStart;
     if (dataStart > out->fileSize) {
         fail(out, "ERR_TRUNCATED", "NSP table extends past the end of the file");
         return false;

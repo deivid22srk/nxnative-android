@@ -49,7 +49,8 @@ std::string analyzeImport(const NspInfo& info, const KeySet& keys) {
             if (i) j << ',';
             const NspEntry& e = info.entries[i];
             j << "{\"name\":\"" << escape(e.name) << "\",\"kind\":\"" << escape(e.kind)
-              << "\",\"size\":" << e.size << '}';
+              << "\",\"size\":" << e.size << ",\"offset\":" << (info.dataStart + e.offset)
+              << '}';
         }
         j << "],";
 

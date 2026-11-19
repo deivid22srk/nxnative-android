@@ -1,8 +1,13 @@
 #include "vulkan_present.h"
 
 #include <android/native_window.h>
+#ifndef VK_USE_PLATFORM_ANDROID_KHR
+#define VK_USE_PLATFORM_ANDROID_KHR
+#endif
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_android.h>
+
+#include "vk_api.h"
 
 #include <atomic>
 #include <chrono>
@@ -90,15 +95,19 @@ void setError(const std::string& text) {
 
 void destroySwapchain(Renderer& r) {
     if (r.device == VK_NULL_HANDLE) return;
-    for (VkFramebuffer fb : r.framebuffers) vkDestroyFramebuffer(r.device, fb, nullptr);
+    if (vkDestroyFramebuffer) {
+        for (VkFramebuffer fb : r.framebuffers) vkDestroyFramebuffer(r.device, fb, nullptr);
+    }
     r.framebuffers.clear();
-    for (VkImageView view : r.views) vkDestroyImageView(r.device, view, nullptr);
+    if (vkDestroyImageView) {
+        for (VkImageView view : r.views) vkDestroyImageView(r.device, view, nullptr);
+    }
     r.views.clear();
-    if (r.renderPass != VK_NULL_HANDLE) {
+    if (r.renderPass != VK_NULL_HANDLE && vkDestroyRenderPass) {
         vkDestroyRenderPass(r.device, r.renderPass, nullptr);
         r.renderPass = VK_NULL_HANDLE;
     }
-    if (r.swapchain != VK_NULL_HANDLE) {
+    if (r.swapchain != VK_NULL_HANDLE && vkDestroySwapchainKHR) {
         vkDestroySwapchainKHR(r.device, r.swapchain, nullptr);
         r.swapchain = VK_NULL_HANDLE;
     }
@@ -312,7 +321,14 @@ bool initVulkan(Renderer& r) {
     ci.enabledExtensionCount = 2;
     ci.ppEnabledExtensionNames = extensions;
     if (vkCreateInstance(&ci, nullptr, &r.instance) != VK_SUCCESS) {
-        setError("vkCreateInstance failed (no Vulkan loader?)");
+        setError(gVkCustomDriver
+                     ? "vkCreateInstance failed with the selected driver (Turnip)"
+                     : "vkCreateInstance failed (no Vulkan loader?)");
+        return false;
+    }
+    std::string loadError;
+    if (!vkApiLoadInstance(r.instance, &loadError)) {
+        setError(loadError);
         return false;
     }
 
@@ -338,6 +354,11 @@ bool initVulkan(Renderer& r) {
     dci.ppEnabledExtensionNames = deviceExtensions;
     if (vkCreateDevice(r.physical, &dci, nullptr, &r.device) != VK_SUCCESS) {
         setError("vkCreateDevice failed");
+        return false;
+    }
+    std::string deviceError;
+    if (!vkApiLoadDevice(r.device, &deviceError)) {
+        setError(deviceError);
         return false;
     }
     vkGetDeviceQueue(r.device, r.queueFamily, 0, &r.queue);
@@ -494,24 +515,25 @@ void stopLocked() {
     destroyAll(gRenderer);
     if (gRenderer.window != nullptr) ANativeWindow_release(gRenderer.window);
     gRenderer.window = nullptr;
+    vkApiClose();
 }
 
 void destroyAll(Renderer& r) {
-    if (r.device != VK_NULL_HANDLE) vkDeviceWaitIdle(r.device);
+    if (r.device != VK_NULL_HANDLE && vkDeviceWaitIdle) vkDeviceWaitIdle(r.device);
     destroySwapchain(r);
     if (r.device != VK_NULL_HANDLE) {
-        if (r.imageAvailable) vkDestroySemaphore(r.device, r.imageAvailable, nullptr);
-        if (r.renderFinished) vkDestroySemaphore(r.device, r.renderFinished, nullptr);
-        if (r.inFlight) vkDestroyFence(r.device, r.inFlight, nullptr);
-        if (r.commandPool) vkDestroyCommandPool(r.device, r.commandPool, nullptr);
-        vkDestroyDevice(r.device, nullptr);
+        if (r.imageAvailable && vkDestroySemaphore) vkDestroySemaphore(r.device, r.imageAvailable, nullptr);
+        if (r.renderFinished && vkDestroySemaphore) vkDestroySemaphore(r.device, r.renderFinished, nullptr);
+        if (r.inFlight && vkDestroyFence) vkDestroyFence(r.device, r.inFlight, nullptr);
+        if (r.commandPool && vkDestroyCommandPool) vkDestroyCommandPool(r.device, r.commandPool, nullptr);
+        if (vkDestroyDevice) vkDestroyDevice(r.device, nullptr);
         r.device = VK_NULL_HANDLE;
     }
-    if (r.surface != VK_NULL_HANDLE && r.instance != VK_NULL_HANDLE) {
+    if (r.surface != VK_NULL_HANDLE && r.instance != VK_NULL_HANDLE && vkDestroySurfaceKHR) {
         vkDestroySurfaceKHR(r.instance, r.surface, nullptr);
         r.surface = VK_NULL_HANDLE;
     }
-    if (r.instance != VK_NULL_HANDLE) {
+    if (r.instance != VK_NULL_HANDLE && vkDestroyInstance) {
         vkDestroyInstance(r.instance, nullptr);
         r.instance = VK_NULL_HANDLE;
     }
@@ -528,7 +550,10 @@ std::string jsonEscape(const std::string& in) {
 
 }  // namespace
 
-bool rendererStart(ANativeWindow* window, int width, int height, std::string* error) {
+bool rendererStart(ANativeWindow* window, int width, int height,
+                   const std::string& hookDir, const std::string& driverDir,
+                   const std::string& driverName, const std::string& tmpDir,
+                   std::string* error) {
     std::lock_guard<std::mutex> lock(gLifecycle);
     stopLocked();
     resetRenderer(gRenderer);
@@ -543,6 +568,12 @@ bool rendererStart(ANativeWindow* window, int width, int height, std::string* er
     }
     ANativeWindow_acquire(window);
     std::string message;
+    if (!vkApiOpen(hookDir, driverDir, driverName, tmpDir, &message)) {
+        if (error) *error = message;
+        ANativeWindow_release(window);
+        gRenderer.window = nullptr;
+        return false;
+    }
     if (!initVulkan(gRenderer) || !createSwapchain(gRenderer, width, height, VK_NULL_HANDLE)) {
         {
             std::lock_guard<std::mutex> stats(gStats.lock);
@@ -550,6 +581,7 @@ bool rendererStart(ANativeWindow* window, int width, int height, std::string* er
         }
         if (error) *error = message.empty() ? "Vulkan initialisation failed" : message;
         destroyAll(gRenderer);
+        vkApiClose();
         ANativeWindow_release(window);
         gRenderer.window = nullptr;
         return false;
@@ -574,6 +606,7 @@ std::string rendererStatsJson() {
       << "\"fps\":" << static_cast<int>(gStats.fps + 0.5) << ","
       << "\"width\":" << gStats.width << ",\"height\":" << gStats.height << ","
       << "\"lastInput\":\"" << jsonEscape(gStats.lastInput) << "\","
+      << "\"customDriver\":" << (gVkCustomDriver ? "true" : "false") << ","
       << "\"error\":\"" << jsonEscape(gStats.error) << "\"}";
     return j.str();
 }

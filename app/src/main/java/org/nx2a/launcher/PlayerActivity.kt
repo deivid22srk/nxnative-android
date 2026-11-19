@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 
 class PlayerActivity : ComponentActivity() {
@@ -93,17 +95,32 @@ private fun PlayerScreen(gameId: String, gameName: String, onExit: () -> Unit) {
     var status by remember { mutableStateOf(context.getString(R.string.player_starting)) }
     var stats by remember { mutableStateOf<JSONObject?>(null) }
     var surfaceReady by remember { mutableStateOf(false) }
+    var driver by remember { mutableStateOf<DriverInfo?>(null) }
+    var driverLoaded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val repository = AppRepository(context)
+        val id = repository.selectedDriver.first()
+        driver = DriverRepository(context).find(id)
+        driverLoaded = true
+        Logs.add("vk", "driver selection: ${driver?.soName ?: "system"}")
+    }
 
     val surfaceView = remember {
         SurfaceView(context).apply {
             holder.addCallback(object : SurfaceHolder.Callback {
                 override fun surfaceCreated(holder: SurfaceHolder) {
                     val result = runCatching {
+                        val selected = driver
                         JSONObject(
                             Native.rendererStart(
                                 holder.surface,
                                 holder.surfaceFrame.width(),
                                 holder.surfaceFrame.height(),
+                                context.applicationInfo.nativeLibraryDir,
+                                selected?.directory?.absolutePath ?: "",
+                                selected?.soName ?: "",
+                                context.cacheDir.absolutePath,
                             ),
                         )
                     }.getOrElse { JSONObject().put("ok", false).put("error", it.message) }
@@ -140,7 +157,13 @@ private fun PlayerScreen(gameId: String, gameName: String, onExit: () -> Unit) {
     }
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        AndroidView(factory = { surfaceView }, modifier = Modifier.fillMaxSize())
+        if (driverLoaded) {
+            AndroidView(factory = { surfaceView }, modifier = Modifier.fillMaxSize())
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -161,7 +184,15 @@ private fun PlayerScreen(gameId: String, gameName: String, onExit: () -> Unit) {
                 text = if (s == null) status else {
                     "GPU: ${s.optString("device")} · Vulkan ${s.optString("api")}\n" +
                         "${s.optInt("width")}x${s.optInt("height")} · ${s.optInt("fps")} fps · " +
-                        "${s.optLong("frames")} frames"
+                        "${s.optLong("frames")} frames\n" +
+                        stringResource(
+                            R.string.player_driver,
+                            if (s.optBoolean("customDriver")) {
+                                driver?.name ?: "Turnip"
+                            } else {
+                                stringResource(R.string.player_driver_system)
+                            },
+                        )
                 },
                 color = Color.LightGray,
                 style = MaterialTheme.typography.bodySmall,

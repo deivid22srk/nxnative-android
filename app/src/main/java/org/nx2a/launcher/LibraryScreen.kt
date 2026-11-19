@@ -38,6 +38,7 @@ fun LibraryScreen(
     games: List<GameEntry>,
     onImport: () -> Unit,
     onPlay: (GameEntry) -> Unit,
+    onBuild: (GameEntry) -> Unit,
     onDelete: (GameEntry) -> Unit,
 ) {
     var pendingDelete by remember { mutableStateOf<GameEntry?>(null) }
@@ -90,6 +91,7 @@ fun LibraryScreen(
                     GameCard(
                         game = game,
                         onPlay = { onPlay(game) },
+                        onBuild = { onBuild(game) },
                         onDelete = { pendingDelete = game },
                     )
                 }
@@ -119,7 +121,12 @@ fun LibraryScreen(
 }
 
 @Composable
-private fun GameCard(game: GameEntry, onPlay: () -> Unit, onDelete: () -> Unit) {
+private fun GameCard(
+    game: GameEntry,
+    onPlay: () -> Unit,
+    onBuild: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp)) {
             Row(Modifier.fillMaxWidth()) {
@@ -159,6 +166,7 @@ private fun GameCard(game: GameEntry, onPlay: () -> Unit, onDelete: () -> Unit) 
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onPlay) { Text(stringResource(R.string.play)) }
+                Button(onClick = onBuild) { Text(stringResource(R.string.library_build)) }
                 OutlinedButton(onClick = onDelete) {
                     Text(stringResource(R.string.delete_confirm))
                 }

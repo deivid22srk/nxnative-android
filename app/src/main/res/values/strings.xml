@@ -86,4 +86,53 @@
     <string name="player_failed">Falha ao iniciar Vulkan</string>
     <string name="player_runtime_notice">Runtime do jogo ainda não integrado nesta versão — isto é o diagnóstico de Vulkan do aparelho.</string>
     <string name="player_exit">Sair</string>
+    <string name="player_driver">Driver: %1$s</string>
+    <string name="player_driver_system">sistema</string>
+
+    <string name="library_build">Preparar</string>
+
+    <string name="build_title">Preparar no aparelho</string>
+    <string name="build_close">Fechar</string>
+    <string name="build_idle">Nenhuma preparação iniciada</string>
+    <string name="build_running">Preparando %1$s</string>
+    <string name="build_done_title">Preparação concluída</string>
+    <string name="build_failed_title">Preparação falhou</string>
+    <string name="build_cancelled_title">Preparação cancelada</string>
+    <string name="build_other_running">Outro jogo está sendo preparado: %1$s</string>
+    <string name="build_honest_note">Este build valida o contêiner, verifica as chaves de conteúdo e extrai o NSP no próprio aparelho, com progresso e retomada. A tradução dos shaders e o runtime do jogo (nx2android) ainda não estão embutidos: a etapa RUNTIME aparece como ignorada, nunca como concluída.</string>
+    <string name="build_keys_ok">Chaves de conteúdo verificadas · NCA %1$s · tipo %2$d</string>
+    <string name="build_start">Iniciar preparação</string>
+    <string name="build_restart">Preparar de novo</string>
+    <string name="build_export">Exportar pacote</string>
+    <string name="build_export_ok">Pacote exportado: %1$d arquivos, %2$s</string>
+    <string name="build_scope_note">O pacote exportado contém relatório, manifesto e logs — não o jogo. Os dados extraídos ficam no armazenamento privado do app.</string>
+    <string name="build_err_game_missing">O jogo não está mais na biblioteca.</string>
+
+    <string name="stage_verify">Validar contêiner e espaço</string>
+    <string name="stage_keys">Verificar chaves de conteúdo</string>
+    <string name="stage_extract">Extrair as entradas do NSP</string>
+    <string name="stage_report">Gerar relatório e manifesto</string>
+    <string name="stage_runtime">Traduzir shaders e montar o runtime</string>
+
+    <string name="build_channel_name">Preparação do jogo</string>
+    <string name="build_channel_description">Progresso da preparação executada no aparelho</string>
+    <string name="build_notif_running">Preparando %1$s</string>
+    <string name="build_notif_done">Preparação concluída</string>
+    <string name="build_notif_failed">Preparação falhou</string>
+    <string name="build_notif_cancelled">Preparação cancelada</string>
+    <string name="build_notif_cancelled_body">Os dados parciais permitem continuar depois.</string>
+    <string name="build_notif_done_body">%1$s extraídos · toque para exportar</string>
+    <string name="build_notif_preparing">Preparando...</string>
+    <string name="build_open">Abrir</string>
+
+    <string name="settings_driver_title">Driver Vulkan (Turnip)</string>
+    <string name="settings_driver_body">Opcional. Importe um .zip com um driver Turnip compatível com a sua GPU Adreno. O driver fica no armazenamento privado do app e é usado apenas pela tela de diagnóstico Vulkan.</string>
+    <string name="settings_driver_system">Sistema (padrão)</string>
+    <string name="settings_driver_import">Importar driver .zip</string>
+    <string name="settings_driver_selected">Selecionado</string>
+    <string name="settings_driver_delete">Remover</string>
+    <string name="settings_driver_empty">Nenhum driver importado</string>
+    <string name="settings_driver_imported">Driver importado: %1$s</string>
+    <string name="settings_driver_failed">Falha ao importar: %1$s</string>
+    <string name="settings_driver_note">O Turnip precisa ser compilado para a geração da sua GPU (ex.: Adreno 7xx/8xx). Um driver incompatível não inicia; volte para o sistema.</string>
 </resources>

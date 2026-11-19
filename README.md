@@ -9,18 +9,22 @@ Vulkan.
 **Bring your own game. This repository contains no game, no key and no game
 data, and the app never downloads anything.**
 
-> **Status (read this first).** This repository is at **M1**: a working
-> Android app that shows the mandatory Terms, imports `.nsp` + `prod.keys`
-> through the system file picker, validates both in native C++, copies the
-> game once into private storage, and offers a player screen with a real
-> Vulkan presentation path and GPU diagnostics.
+> **Status (read this first).** This repository is at **M2 (preparation on the
+> device)**. Beyond M1, the app now runs a foreground build service that
+> re-validates the container, **proves the content keys decrypt the ticket title
+> key and the program NCA header** (AES-128 ECB/XTS in native C++), extracts
+> every NSP entry into private storage with progress, cancellation and resume,
+> writes a manifest/report and exports a diagnostic bundle. It also ships
+> **libadrenotools** (BSD-2-Clause) and lets the user import and select a
+> **Turnip driver .zip** for the Vulkan diagnostics screen.
 >
-> The game runtime (NSO rewrite, Horizon HLE, NVN→Vulkan replay) is **not**
-> integrated yet, so **no game runs**. See [`PROGRESS.md`](PROGRESS.md) for
-> the evidence levels and [`docs/ANDROID_PORT_PLAN.md`](docs/ANDROID_PORT_PLAN.md)
-> for the path to a playable port. The runtime itself lives in
-> `shirai91/nx2android` (`nxnative/dm/android`, `nxnative/dm/host`) and is the
-> realistic base for M4.
+> The game runtime (NSO rewrite, Horizon HLE, NVN→Vulkan replay, SPIR-V
+> translation) is **not** integrated yet, so **no game runs**, and the build
+> pipeline reports its `RUNTIME` stage as **skipped**, never as done. See
+> [`PROGRESS.md`](PROGRESS.md) and
+> [`docs/ON_DEVICE_BUILD.md`](docs/ON_DEVICE_BUILD.md) for exactly what is real.
+> The runtime itself lives in `shirai91/nx2android` (`nxnative/dm/android`,
+> `nxnative/dm/host`) and is the realistic base for M4.
 
 ## What works today
 
@@ -43,12 +47,24 @@ data, and the app never downloads anything.**
   clear/present loop, GPU name, Vulkan API version, FPS/frame counter,
   touch joystick/buttons and gamepad key forwarding. This is diagnostics,
   not the game renderer.
+- **On-device preparation** from the library ("Preparar"): foreground service
+  with stage/percentage in the notification plus a cancel action, wake lock,
+  content-key verification (ticket + NCA header), resumable NSP extraction,
+  manifest and `build-report.json`.
+- **Export** of the report/manifest/logs as a `.zip` through the system file
+  picker (the multi-GB extracted data stays in private storage and is not
+  zipped).
+- **Turnip driver packs**: import a driver `.zip`, select it or the system
+  driver in Settings. The renderer loads it through libadrenotools. No driver
+  is bundled or downloaded by the app.
 
 ## What is deliberately out of scope (yet)
 
 `.nsz`, `.xcz` and `.xci` are rejected with a clear message (the PC porter can
-convert them). NCA decryption, RomFS/ExeFS extraction, NSO rewriting and the
-NVN→Vulkan backend are milestones M2–M4, not part of this version.
+convert them). **Section-level NCA decryption and RomFS/ExeFS extraction**,
+NSO rewriting, SPIR-V translation and the NVN→Vulkan backend are milestones
+M3–M4. The preparation pipeline copies the container's entries; it does not
+claim to produce a playable runtime.
 
 ## Build
 
@@ -84,6 +100,12 @@ bash tools/audit_no_assets.sh
    enough, it copies the ROM once into private storage. If not, it names the
    missing keys and stops.
 5. **Biblioteca**: the imported entry appears with its Title ID and size.
+6. **Preparar**: runs the on-device preparation. Keep the app installed and the
+   notification visible; it can continue in the background. When it finishes,
+   **Exportar pacote** writes the report, manifest and logs to the destination
+   you choose.
+7. **Ajustes → Driver Vulkan (Turnip)**: optionally import a Turnip `.zip` and
+   select it. The player screen then reports the driver it actually loaded.
 
 Nothing is uploaded, and the app has no `INTERNET` permission.
 
@@ -97,6 +119,9 @@ before importing anything.
 
 ## Credits / licences
 
-See [`THIRD_PARTY.md`](THIRD_PARTY.md). The runtime architecture this app is a
-front end for is MIT-licensed work by the nxnative/nx2android authors, built
-on Ryujinx (shader translator), LibHac, SPIRV-Cross, glslang and others.
+See [`THIRD_PARTY.md`](THIRD_PARTY.md). libadrenotools is vendored as source
+(BSD-2-Clause) in `app/src/main/cpp/third_party/libadrenotools`, with its
+licence and the upstream commit recorded in `NX2A.txt`. The runtime
+architecture this app is a front end for is MIT-licensed work by the
+nxnative/nx2android authors, built on Ryujinx (shader translator), LibHac,
+SPIRV-Cross, glslang and others.

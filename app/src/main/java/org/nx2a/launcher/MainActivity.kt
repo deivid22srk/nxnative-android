@@ -94,6 +94,8 @@ private fun AppRoot(
     val context = LocalContext.current
     val games by repository.games.collectAsStateWithLifecycle(initialValue = emptyList())
     val settings by repository.settings.collectAsStateWithLifecycle(initialValue = GameSettings())
+    val selectedDriver by repository.selectedDriver.collectAsStateWithLifecycle(initialValue = "")
+    val driverRepository = remember { DriverRepository(context) }
     var tab by remember { mutableStateOf(Tab.LIBRARY) }
     val scope = rememberCoroutineScope()
 
@@ -134,6 +136,13 @@ private fun AppRoot(
                                 .putExtra(PlayerActivity.EXTRA_GAME_NAME, game.name),
                         )
                     },
+                    onBuild = { game ->
+                        context.startActivity(
+                            Intent(context, BuildActivity::class.java)
+                                .putExtra(BuildActivity.EXTRA_TITLE_ID, game.titleId)
+                                .putExtra(BuildActivity.EXTRA_GAME_NAME, game.name),
+                        )
+                    },
                     onDelete = { game ->
                         scope.launch {
                             importer.deleteGame(game.titleId)
@@ -154,6 +163,9 @@ private fun AppRoot(
                     onChange = { scope.launch { repository.saveSettings(it) } },
                     games = games,
                     importer = importer,
+                    driverRepository = driverRepository,
+                    selectedDriverId = selectedDriver,
+                    onSelectDriver = { id -> scope.launch { repository.selectDriver(id) } },
                     onDeleteAll = {
                         scope.launch {
                             games.forEach {

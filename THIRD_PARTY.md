@@ -1,10 +1,12 @@
 # Third-party software and licences
 
-This repository contains **no game data, no keys and no third-party runtime
-binaries**. The Android app links only the AndroidX/Compose/Kotlin libraries
-resolved by Gradle. The table records the projects the runtime work builds on
-(and will vendor at milestone M4), with their licences, so attribution is not
-lost when that happens.
+This repository contains **no game data, no keys and no prebuilt third-party
+runtime binaries**. The Android app links the AndroidX/Compose/Kotlin
+libraries resolved by Gradle. libadrenotools is vendored **as source** (not as
+a binary) so the app can load a user-supplied Turnip driver; its licence and
+upstream commit are preserved next to the code. The table records the projects
+the runtime work builds on, with their licences, so attribution is not lost
+when more is vendored at milestone M4.
 
 | Project | Licence | Used for | Present in this repo? |
 |---|---|---|---|
@@ -21,6 +23,7 @@ lost when that happens.
 | stb_vorbis | MIT / public domain | movie audio | no |
 | NVIDIA FLIP | MIT | image comparison in diagnostics | no |
 | Vulkan headers / loader | Apache-2.0 | graphics API | headers come from the NDK |
+| [libadrenotools](https://github.com/bylaws/libadrenotools) + [liblinkernsbypass](https://github.com/bylaws/liblinkernsbypass) | BSD-2-Clause | load a user-supplied Turnip Vulkan driver in a private linker namespace | **yes, source**: `app/src/main/cpp/third_party/libadrenotools` (commit recorded in `NX2A.txt`) |
 | AndroidX, Jetpack Compose, Kotlin, kotlinx.coroutines | Apache-2.0 | this app's UI and coroutines | via Gradle |
 
 The MIT licence text that applies to this repository (and preserves the

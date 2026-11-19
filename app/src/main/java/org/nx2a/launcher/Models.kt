@@ -19,7 +19,13 @@ data class ImportReport(
     val supported: Boolean,
 )
 
-data class NspEntry(val name: String, val kind: String, val size: Long)
+data class NspEntry(
+    val name: String,
+    val kind: String,
+    val size: Long,
+    /** Absolute offset of the payload inside the NSP file. */
+    val offset: Long = 0,
+)
 
 fun parseImportReport(json: String): ImportReport = try {
     val o = JSONObject(json)
@@ -27,7 +33,12 @@ fun parseImportReport(json: String): ImportReport = try {
     val arr = o.optJSONArray("entries") ?: JSONArray()
     for (i in 0 until arr.length()) {
         val e = arr.getJSONObject(i)
-        entries += NspEntry(e.optString("name"), e.optString("kind"), e.optLong("size"))
+        entries += NspEntry(
+                e.optString("name"),
+                e.optString("kind"),
+                e.optLong("size"),
+                e.optLong("offset"),
+            )
     }
     val missing = mutableListOf<String>()
     val marr = o.optJSONArray("missingKeys") ?: JSONArray()

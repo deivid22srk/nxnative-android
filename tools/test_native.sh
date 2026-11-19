@@ -13,6 +13,8 @@ mkdir -p "$OUT"
     app/src/main/cpp/keys.cpp \
     app/src/main/cpp/nsp.cpp \
     app/src/main/cpp/import_check.cpp \
+    app/src/main/cpp/crypto.cpp \
+    app/src/main/cpp/content_check.cpp \
     -o "$OUT/test_nsp"
 "$OUT/test_nsp"
 
@@ -24,5 +26,13 @@ mkdir -p "$OUT"
     app/src/main/cpp/nsp.cpp \
     app/src/main/cpp/import_check.cpp \
     -o "$OUT/probe_nsp"
+
+"$CXX" -std=c++20 -O1 -Wall -Wextra -Werror -Iapp/src/main/cpp \
+    tests/native/probe_content.cpp \
+    app/src/main/cpp/keys.cpp \
+    app/src/main/cpp/nsp.cpp \
+    app/src/main/cpp/crypto.cpp \
+    app/src/main/cpp/content_check.cpp \
+    -o "$OUT/probe_content"
 
 echo "native core: all checks passed ($OUT)"

@@ -20,6 +20,9 @@ public:
     bool loadText(const std::string& text, std::string* error);
 
     bool has(const std::string& name) const;
+    // Internal use only: copies the bytes of `name`. The JNI surface never
+    // exposes this, and values are never printed or written to disk.
+    bool get(const std::string& name, std::vector<std::uint8_t>* out) const;
     std::size_t size() const { return values_.size(); }
 
     // Highest NN seen for "<prefix>_NN", or -1 when the prefix is absent.

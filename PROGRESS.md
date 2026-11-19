@@ -6,18 +6,23 @@ Updated 2026-11-19.
 
 | Level | Meaning | Status |
 |---|---|---|
-| **L0** | CI builds the APK | **done** — run [44558132809](https://github.com/deivid22srk/nxnative-android/actions/runs/44558132809): native tests, debug APK, CI-signed release APK, APK content verification. Downloaded and checked locally: `arm64-v8a` only, minSdk 29, targetSdk 35, no game/key entries. |
-| **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented; the validation core is verified by the host test in CI and was run against the user's real `hl.nsp` (title id `0100F7E00C70E000`, generation 16, three missing keys named). **Not exercised on a physical device**: no Android device is attached to this machine. |
-| L2 | Extraction + NSO rewrite completes on the device | **not verified / not implemented** |
+| **L0** | CI builds the APK | **done** — earlier green run [44563384561](https://github.com/deivid22srk/nxnative-android/actions/runs/44563384561); the new build is re-verified by CI on push. Native tests, debug APK, CI-signed release APK, APK content verification (`arm64-v8a` only, minSdk 29, targetSdk 35, no game/key entries). |
+| **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented and host-tested; run against the user's real `hl.nsp` (title id `0100F7E00C70E000`, generation 16, content keys verified: ticket title key with `titlekek_10`, NCA header `NCA3`, content type 0). **Not exercised on a physical device**: no Android device is attached to this machine. |
+| **L2** | Extraction + NSO rewrite completes on the device | **partially implemented, not verified**. The app has an on-device foreground preparation service that extracts the NSP entries (PFS0) with resume/progress and verifies the content keys. It does **not** decrypt NCA sections, extract RomFS/ExeFS or rewrite NSOs, and no run was made on a phone. |
 | L3 | Runtime reaches the game's first `main()` | **not verified / not implemented** |
-| L4 | First game frame via Vulkan | **not verified**. A standalone Vulkan present loop (clear + present) is implemented in the player shell; it is not the game's renderer. |
+| L4 | First game frame via Vulkan | **not verified**. A standalone Vulkan present loop (clear + present) is implemented in the player shell; it is not the game's renderer. The screen can load a user-supplied Turnip driver through libadrenotools, but no driver was tested here. |
 | L5 | Menu / playable | **not verified** |
 
 The honest summary: this repository is a working shell with real
-import/validation and a real Vulkan presentation path, plus the plan and the
-survey needed to continue. It is **not** a running Hogwarts Legacy port, and
-the supplied key set (15.0.0, generation `0x0E`) cannot open this game's
-NCAs (generation `0x10`).
+import/validation, a real Vulkan presentation path, content-key decryption
+(ticket + NCA header), on-device container extraction with a foreground
+service and export, and a Turnip driver picker. It is **not** a running
+Hogwarts Legacy port: shader translation and the runtime are still missing,
+and the pipeline says so explicitly (the `RUNTIME` stage is `SKIPPED`).
+
+Key coverage is no longer the blocker: `prod2.keys` (233 keys, up to
+generation `0x12`) covers this NSP's generation 16, and the native probe
+verified the ticket and the program NCA header on the PC.
 
 ## Milestones
 
@@ -28,10 +33,13 @@ NCAs (generation `0x10`).
       `title.keys`), native key parsing and NSP inspection in C++, missing-key
       report, private-storage copy with progress/cancel, library, settings,
       delete, diagnostics/log export, player shell with Vulkan.
-- [ ] **M2** — resumable copy across process death; NACP name/icon; update/DLC
-      layering.
-- [ ] **M3** — on-device NCA/RomFS/ExeFS/LZ4 extraction and NSO rewrite
-      (needs a supported title and keys that cover it).
+- [x] **M2 (partial)** — foreground build service + notification progress and
+      cancel, wake lock, resumable PFS0 extraction driven chunk by chunk,
+      content-key verification (AES-128 ECB ticket / XTS NCA header, verified
+      against real NCA headers), manifest/report export, libadrenotools +
+      Turnip `.zip` import/selection. **Still missing:** NCA section
+      decryption, RomFS/ExeFS parsing, NSO rewrite.
+- [ ] **M3** — on-device NCA/RomFS/ExeFS/LZ4 extraction and NSO rewrite.
 - [ ] **M4** — vendor the nx2android runtime (`dm/android`, `dm/host`,
       shader translator products) and load the rewritten NSOs.
 - [ ] **M5** — audio/input/saves/performance.
@@ -55,4 +63,13 @@ NCAs (generation `0x10`).
 - 2026-11-19 — host test (`tests/native/test_nsp.cpp`) builds a synthetic
   PFS0 in memory with a generation-`0x0A` ticket and checks: title ID, key
   generation, missing-key list, and that a key value never appears in the
-  result string.
+  result string. It now also checks AES-128 FIPS-197, ECB/CTR/XTS
+  round-trips, and a synthetic encrypted ticket + NCA header.
+- 2026-11-19 — real-data content probe (`tests/native/probe_content.cpp`) on
+  `hl.nsp` + `prod2.keys`: `titleKeyOk:true` (`titlekek_10`), `headerOk:true`,
+  `headerMagic:"NCA3"`, `contentType:0`, title id found in the header. Only
+  booleans/derived metadata were printed; no key value or decrypted content.
+- 2026-11-19 — on-device build pipeline added: foreground service, notification
+  progress/cancel, resumable extraction, report/manifest export, and
+  libadrenotools (BSD-2) with Turnip `.zip` import/selection. **Not yet run on
+  a phone**; the `RUNTIME` stage is explicitly `SKIPPED`.

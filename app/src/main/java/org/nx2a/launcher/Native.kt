@@ -15,7 +15,23 @@ object Native {
     external fun inspectNsp(fd: Int): String
     external fun loadKeys(path: String): String
     external fun analyzeImport(fd: Int, keysPath: String): String
-    external fun rendererStart(surface: Surface, width: Int, height: Int): String
+    external fun verifyContentKeys(nspPath: String, keysPath: String): String
+    external fun copyRange(
+        fd: Int,
+        srcOffset: Long,
+        length: Long,
+        destPath: String,
+        append: Boolean,
+    ): Long
+    external fun rendererStart(
+        surface: Surface,
+        width: Int,
+        height: Int,
+        hookDir: String,
+        driverDir: String,
+        driverName: String,
+        tmpDir: String,
+    ): String
     external fun rendererStop()
     external fun rendererStats(): String
     external fun rendererInput(action: Int, x: Float, y: Float, code: Int)
