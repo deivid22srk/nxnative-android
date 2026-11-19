@@ -94,7 +94,7 @@
     <string name="build_close">Close</string>
     <string name="build_idle">No preparation started</string>
     <string name="build_running">Preparing %1$s</string>
-    <string name="build_done_title">Preparation complete</string>
+    <string name="build_done_title">Container prepared</string>
     <string name="build_failed_title">Preparation failed</string>
     <string name="build_cancelled_title">Preparation cancelled</string>
     <string name="build_other_running">Another game is being prepared: %1$s</string>
@@ -106,6 +106,7 @@
     <string name="build_export_ok">Bundle exported: %1$d files, %2$s</string>
     <string name="build_scope_note">The exported bundle contains the report, manifest and logs — not the game. Extracted data stays in the app private storage.</string>
     <string name="build_err_game_missing">The game is no longer in the library.</string>
+    <string name="build_no_runtime_warning">This is not a playable port: the runtime (translated shaders + nx2android host) is not in this APK.</string>
 
     <string name="stage_verify">Validate the container and free space</string>
     <string name="stage_keys">Verify the content keys</string>
@@ -116,7 +117,7 @@
     <string name="build_channel_name">Game preparation</string>
     <string name="build_channel_description">Progress of the preparation running on the device</string>
     <string name="build_notif_running">Preparing %1$s</string>
-    <string name="build_notif_done">Preparation complete</string>
+    <string name="build_notif_done">Container prepared</string>
     <string name="build_notif_failed">Preparation failed</string>
     <string name="build_notif_cancelled">Preparation cancelled</string>
     <string name="build_notif_cancelled_body">The partial data can be resumed later.</string>

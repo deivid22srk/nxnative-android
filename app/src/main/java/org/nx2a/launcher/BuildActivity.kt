@@ -210,6 +210,14 @@ private fun BuildScreen(titleId: String, gameName: String, onExit: () -> Unit) {
                             modifier = Modifier.padding(top = 8.dp),
                         )
                     }
+                    if (snapshot.finished) {
+                        Text(
+                            text = stringResource(R.string.build_no_runtime_warning),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 8.dp),
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(12.dp))
