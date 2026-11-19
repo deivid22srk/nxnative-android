@@ -40,16 +40,23 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
+      # The ubuntu-latest runner ships the Android SDK and cmdline-tools.
+      # setup-android is intentionally not used: its pinned cmdline-tools
+      # version conflicts with the runner's preinstalled one.
       - name: Install SDK, NDK and CMake at pinned versions
         run: |
-          sdkmanager --install \
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          SDKM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKM" ]; then SDKM="$(command -v sdkmanager)"; fi
+          yes | "$SDKM" --sdk_root="$SDK" --licenses >/dev/null || true
+          "$SDKM" --sdk_root="$SDK" --install \
             "platforms;android-35" \
             "build-tools;35.0.0" \
+            "platform-tools" \
             "ndk;27.2.12479018" \
             "cmake;3.22.1"
-          yes | sdkmanager --licenses >/dev/null || true
 
       - uses: gradle/actions/setup-gradle@v4
 
