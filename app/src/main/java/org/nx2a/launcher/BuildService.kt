@@ -232,6 +232,7 @@ class BuildService : Service() {
             BuildStageId.VERIFY -> R.string.stage_verify
             BuildStageId.KEYS -> R.string.stage_keys
             BuildStageId.EXTRACT -> R.string.stage_extract
+            BuildStageId.SHADERS -> R.string.stage_shaders
             BuildStageId.REPORT -> R.string.stage_report
             BuildStageId.RUNTIME -> R.string.stage_runtime
         },

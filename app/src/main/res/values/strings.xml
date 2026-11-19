@@ -112,6 +112,7 @@
     <string name="stage_verify">Validar contêiner e espaço</string>
     <string name="stage_keys">Verificar chaves de conteúdo</string>
     <string name="stage_extract">Extrair as entradas do NSP</string>
+    <string name="stage_shaders">Decodificar Oodle e traduzir shaders</string>
     <string name="stage_report">Gerar relatório e manifesto</string>
     <string name="stage_runtime">Traduzir shaders e montar o runtime</string>
 

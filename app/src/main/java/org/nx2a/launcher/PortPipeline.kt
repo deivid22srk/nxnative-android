@@ -39,6 +39,7 @@ class PortPipeline(private val context: Context) {
         BuildStageId.VERIFY to 0.05f,
         BuildStageId.KEYS to 0.10f,
         BuildStageId.EXTRACT to 0.80f,
+        BuildStageId.SHADERS to 0.0f,
         BuildStageId.REPORT to 0.05f,
         BuildStageId.RUNTIME to 0.0f,
     )
@@ -299,6 +300,20 @@ class PortPipeline(private val context: Context) {
         emit()
 
         val finishedAt = System.currentTimeMillis()
+        // Finalise every stage *before* serialising the report: an exported
+        // bundle must never show REPORT=ACTIVE or RUNTIME=PENDING.
+        stages[BuildStageId.REPORT] = BuildStageState(
+            BuildStageId.REPORT, StageState.DONE, "build-report.json", 1f,
+        )
+        stages[BuildStageId.SHADERS] = BuildStageState(
+            BuildStageId.SHADERS, StageState.SKIPPED,
+            "Oodle decode + SPIR-V translation are not embedded in this build", 0f,
+        )
+        stages[BuildStageId.RUNTIME] = BuildStageState(
+            BuildStageId.RUNTIME, StageState.SKIPPED,
+            "nx2android host/profile are not embedded in this build", 0f,
+        )
+
         val reportFile = File(buildDir, "build-report.json")
         val stagesArray = JSONArray()
         for (id in stageOrder) {
@@ -351,32 +366,27 @@ class PortPipeline(private val context: Context) {
             put(
                 "pipeline",
                 JSONObject().apply {
-                    put("status", "PREPARED")
+                    put("status", "CONTAINER_EXTRACTED")
                     put("extractedBytes", extractedBytes)
                     put("files", report.entries.size)
                     put("runtimeIncluded", false)
+                    put("shadersDecoded", false)
                     put("shadersTranslated", false)
+                    put("playable", false)
                     put("stages", stagesArray)
                 },
             )
             put(
                 "limitations",
                 JSONArray().apply {
-                    put("This build extracts and verifies the container; it does not embed the nx2android shader translator or host.")
-                    put("The SKIPPED RUNTIME stage is not a success and is never reported as one.")
+                    put("This build extracts and verifies the container; it does not embed the Oodle shader decode, the SPIR-V translator or the nx2android host.")
+                    put("SHADERS and RUNTIME are SKIPPED: neither is a success and neither is reported as one.")
+                    put("The extracted entries are still encrypted NCA/CNMT/ticket files, not a playable game tree.")
                 },
             )
         }
         reportFile.writeText(obj.toString(2))
         reportPath = reportFile.absolutePath
-
-        stages[BuildStageId.REPORT] = BuildStageState(
-            BuildStageId.REPORT, StageState.DONE, "build-report.json", 1f,
-        )
-        stages[BuildStageId.RUNTIME] = BuildStageState(
-            BuildStageId.RUNTIME, StageState.SKIPPED,
-            "translator + host are not part of this build", 0f,
-        )
         log("report", "wrote ${reportFile.name}")
 
         val finalSnapshot = base.copy(

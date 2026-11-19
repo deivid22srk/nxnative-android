@@ -73,3 +73,10 @@ verified the ticket and the program NCA header on the PC.
   progress/cancel, resumable extraction, report/manifest export, and
   libadrenotools (BSD-2) with Turnip `.zip` import/selection. **Not yet run on
   a phone**; the `RUNTIME` stage is explicitly `SKIPPED`.
+- 2026-11-19 — the user ran it on a Motorola Edge 30 Fusion (Android 14):
+  6.83 GB extracted in 94 s, content keys verified, Turnip driver imported.
+  The exported report exposed a serialisation bug (it was written while
+  `REPORT` was still `ACTIVE` and `RUNTIME` still `PENDING`). Fixed: all stages
+  are finalised before the JSON is written; `SHADERS` and `RUNTIME` are now
+  always `SKIPPED`, and the pipeline status is `CONTAINER_EXTRACTED`, never
+  a claim of a playable port.

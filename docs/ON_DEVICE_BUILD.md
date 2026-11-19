@@ -18,11 +18,16 @@ the screen does not lose the progress.
 | `VERIFY` | PFS0 header/table, ticket rights ID → title ID + key generation, key coverage, free-space check | `nsp.cpp`, `import_check.cpp` |
 | `KEYS` | `titlekek_<gen>` decrypts the ticket title-key block (AES-128-ECB); `header_key` decrypts the program NCA header (AES-128-XTS, big-endian sector units) and the magic is checked (`NCA3`) | `crypto.cpp`, `content_check.cpp` |
 | `EXTRACT` | every entry is copied out of the NSP into `files/build/<titleId>/extracted/`, in 16 MB chunks, resumable and cancellable, with a manifest | `PortPipeline.kt` + `Native.copyRange` |
+| `SHADERS` | **`SKIPPED`** — Oodle shader decode and Maxwell→SPIR-V translation are not embedded in this build | — |
 | `REPORT` | `build-report.json` with device, container, key-check results, stage states and limitations | `PortPipeline.kt` |
-| `RUNTIME` | **`SKIPPED`** — shader decode, SPIR-V translation and the nx2android host are not embedded in this build | — |
+| `RUNTIME` | **`SKIPPED`** — the nx2android host/profile is not embedded in this build | — |
 
-The `RUNTIME` row is never reported as done. `build-report.json` carries
-`"runtimeIncluded": false` and a `limitations` array for the same reason.
+Neither `SHADERS` nor `RUNTIME` is ever reported as done. `build-report.json`
+carries `"runtimeIncluded": false`, `"shadersDecoded": false`,
+`"shadersTranslated": false`, `"playable": false` and a `limitations` array for
+the same reason. A bundle exported by an older build could show `REPORT=ACTIVE`
+and `RUNTIME=PENDING`; that was a serialisation-order bug, fixed by finalising
+all stages before writing the JSON.
 
 ## What is still missing for a playable port
 

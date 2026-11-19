@@ -111,6 +111,7 @@
     <string name="stage_verify">Validate the container and free space</string>
     <string name="stage_keys">Verify the content keys</string>
     <string name="stage_extract">Extract the NSP entries</string>
+    <string name="stage_shaders">Decode Oodle and translate shaders</string>
     <string name="stage_report">Write the report and manifest</string>
     <string name="stage_runtime">Translate shaders and assemble the runtime</string>
 

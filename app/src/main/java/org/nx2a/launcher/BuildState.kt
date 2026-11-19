@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-enum class BuildStageId { VERIFY, KEYS, EXTRACT, REPORT, RUNTIME }
+enum class BuildStageId { VERIFY, KEYS, EXTRACT, SHADERS, REPORT, RUNTIME }
 
 enum class StageState { PENDING, ACTIVE, DONE, FAILED, SKIPPED }
 
