@@ -45,6 +45,13 @@ NCAs (generation `0x10`).
 - 2026-11-19 — CI run 44558132809 green: `app-debug.apk` (25.7 MB) and
   CI-signed `app-release.apk` (20.9 MB) uploaded; `tools/verify_apk.sh`
   confirmed `arm64-v8a` only and no `.nsp`/`.keys`/`.nca` entries.
+- 2026-11-19 — a second key set (`prod2.keys`, 233 keys, generations up to
+  `0x12`) covers the NSP's generation 16. `porter doctor` passed and the
+  experimental port ran on the PC: survey (Unreal Engine 4, NVN, version 1.0.0,
+  SDK 16.2.3), NCA/RomFS extraction (190 files, 6.8 GB), provisional profile.
+  It stopped at the Oodle-compressed Unreal shader archives, which the porter
+  decodes with the game's own ARM64 code **on an Android device** over adb;
+  no device is attached. L2 remains unverified (the work was PC-side).
 - 2026-11-19 — host test (`tests/native/test_nsp.cpp`) builds a synthetic
   PFS0 in memory with a generation-`0x0A` ticket and checks: title ID, key
   generation, missing-key list, and that a key value never appears in the

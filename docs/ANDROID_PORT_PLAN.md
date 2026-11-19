@@ -89,18 +89,19 @@ every NSP carries.
 | Content | 1 program NCA (7,334,330,368 B), 1 control NCA (203,776 B), 1 meta/CNMT NCA (3,584 B), 2 small NCAs, ticket + cert | NSP table |
 | Engine | Unreal Engine 4 (public information) | not verifiable without decrypting the NCA (missing keys, see below) |
 | Profile in nx2android | **none** (`nxnative/dm/games/0100F7E00C70E000/` does not exist) | `ls dm/games` |
-| Keys supplied | `prod.keys` for 15.0.0: `master_key_00..0e`, `titlekek_00..0e`, `key_area_key_application_00..0e`, `header_key` present | key *names* only were listed |
+| Keys supplied (1st set) | `prod.keys` for 15.0.0: `master_key_00..0e`, `titlekek_00..0e`, `key_area_key_application_00..0e`, `header_key` present | key *names* only were listed |
+| Keys supplied (2nd set) | `prod2.keys`: 233 keys, generations up to `0x12` — **covers generation 16** | names/generations only |
 | Keys required | key generation 16: `titlekek_10`, `key_area_key_application_10`, `master_key_10` | rights ID generation |
 
-**Consequence (brief §3 rule 6):** the supplied key set stops at generation
-`0x0E` (14). The NSP's ticket is generation `0x10` (16), so its title key
-cannot be decrypted and its NCAs cannot be opened. This is a hard stop for
-any extraction, NSO rewrite, shader survey or local gameplay test with these
-files. Keys for firmware ≥ 16.0.0 are needed. No key was fetched from
-anywhere, and nothing about the game is stored in this repository.
+**Consequence:** the first key set stopped at generation `0x0E` (14) and could
+not open the NCAs. The second set covers generation 16, which unblocked the
+port: the experimental pipeline surveyed the title and extracted its NCAs and
+RomFS on the PC (see `docs/HOGWARTS_LEGACY_SURVEY.md`). The next blocker is not
+keys but the Oodle-compressed Unreal shader archives, which require a physical
+Android device to decode with the game's own ARM64 code.
 
-Because of that, the runtime milestones below are **not** claimed as done for
-this title.
+The runtime milestones below are still **not** claimed as done for this
+title.
 
 ## 3. Architecture decisions for this repository
 

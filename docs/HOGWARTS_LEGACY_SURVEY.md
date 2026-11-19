@@ -35,32 +35,44 @@ app needs for its inventory and progress bars; they contain no game content.
 
 ## Keys
 
-`prod.keys` in the supplied archive is a 15.0.0 set: `master_key_00..0e`,
-`titlekek_00..0e`, `key_area_key_application_00..0e`, `header_key`.
-Key generation 16 needs `titlekek_10`, `key_area_key_application_10` and
-`master_key_10`, none of which are present.
+The first archive supplied with the task was a 15.0.0 set (`master_key_00..0e`,
+`titlekek_00..0e`, `key_area_key_application_00..0e`), which cannot open a
+generation-16 NSP. A second set (`prod2.keys`, 233 keys, generations up to
+`0x12`) **does** cover generation 16: the app's validator returns
+`missingKeys: []`, `supported: true` for this container. Key values were never
+printed, logged or committed.
 
-Therefore:
+## Verified survey (2026-11-19, PC side)
 
-- the ticket title key cannot be decrypted;
-- the program NCA cannot be opened;
-- NSO rewriting, shader survey and any local run are impossible **with these
-  files**.
+`python -m porter port <folder> --experimental` ran with the second key set:
 
-Nothing was downloaded to work around this. The app's validator detects this
-case before copying the 7.3 GB file and reports only the missing *names*.
+- Display version **1.0.0**, SDK **16.2.3**.
+- Engine and API: **Unreal Engine 4**, **NVN**, Wwise.
+- Modules: `main` (93.5 MB text, 7.7 MB rodata, 21.1 MB data, 32.3 MB bss,
+  build id `70658a5c238d69c24698fded6a34efa6`), `subsdk0`
+  (NintendoSDK_movie), `sdk` (nnSdk), `rtld`.
+- RomFS: **185 files, 6.75 GB**, 174 under `Phoenix/Content` (`.ucas`/`.utoc`
+  IoStore + `.pak`, 134 `.bk2` movies, 9 PNG).
+- Rewrite census: `main` 24,503,320 instructions decoded; 48,962 `x18` uses,
+  328 `mrs tpidr_el0`; imports 825 `nn::*`/libc functions that the reference
+  title does not import.
+- Extraction: 190 files / 6.8 GB into the build folder.
+- Provisional profile generated; `android.tsv` has `status experimental`.
 
-## What the porter would do next (once 16.x keys exist)
+**Where it stopped:** the title keeps its shaders in Oodle-compressed Unreal
+shader code archives, which only the game's own ARM64 decoder can read, and
+the Android porter runs that decoder on a physical device over adb. No device
+was attached, so the pipeline aborted before NSO rewriting, shader
+translation, host build and APK assembly. See
+[`HOGWARTS_LEGACY_PORT_RUNBOOK.md`](HOGWARTS_LEGACY_PORT_RUNBOOK.md).
 
-1. `python -m porter inspect <folder>` — confirms the family (base only).
-2. `python -m porter port <folder> --experimental -k prod.keys` — surveys the
-   title, writes a provisional profile from `dm/games/profile_guess.py`,
-   extracts ExeFS/RomFS with `nx_extract`, rewrites the NSOs and translates
-   the shaders. An unsupported UE4 title is the hardest class of port: the
-   survey must classify the engine, the shader corpus is large, and the
-   `android.tsv` profile needs the right `cpu`/`gpu`/`env` values.
-3. Run on a BC-capable device (Adreno/Xclipse), collect logs, iterate on the
-   shared Vulkan/HLE fixes — exactly the process documented for NieR:Automata
-   in `docs/NIER_AUTOMATA_ANDROID_PORT.md` of the upstream repository.
+## What the porter would do next (with a device)
 
-Until step 3 produces frames, this title's status is **not supported**.
+1. Decode the 9 shader archives on the device with `DM_OODLE_JOB`.
+2. Rewrite the NSOs for `DM_TARGET=android`, translate the shader corpus to
+   SPIR-V, build the Vulkan shader bundle and `libdmhost.so`, assemble the APK
+   and data pack.
+3. Install and bring it up, iterating on the shared NVN/Vulkan and host code —
+   the process documented for NieR:Automata in the upstream repository.
+
+Until a device produces frames, this title's status is **not supported**.
