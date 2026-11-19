@@ -24,6 +24,8 @@ when more is vendored at milestone M4.
 | NVIDIA FLIP | MIT | image comparison in diagnostics | no |
 | Vulkan headers / loader | Apache-2.0 | graphics API | headers come from the NDK |
 | [libadrenotools](https://github.com/bylaws/libadrenotools) + [liblinkernsbypass](https://github.com/bylaws/liblinkernsbypass) | BSD-2-Clause | load a user-supplied Turnip Vulkan driver in a private linker namespace | **yes, source**: `app/src/main/cpp/third_party/libadrenotools` (commit recorded in `NX2A.txt`) |
+| nx2android host (`libdmhost.so`) | MIT | the generated game runtime launched by the Port tab | **yes, prebuilt**: `app/src/main/jniLibs/arm64-v8a/libdmhost.so`; built from the MIT nx2android sources, no game data |
+| Mesa Turnip (`libvulkan_freedreno.so`) | MIT | Adreno Vulkan driver loaded through libadrenotools | **yes, prebuilt**: `app/src/main/jniLibs/arm64-v8a/libvulkan_freedreno.so` (mainline Turnip V32) |
 | AndroidX, Jetpack Compose, Kotlin, kotlinx.coroutines | Apache-2.0 | this app's UI and coroutines | via Gradle |
 
 The MIT licence text that applies to this repository (and preserves the

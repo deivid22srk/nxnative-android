@@ -57,6 +57,11 @@ data, and the app never downloads anything.**
 - **Turnip driver packs**: import a driver `.zip`, select it or the system
   driver in Settings. The renderer loads it through libadrenotools. No driver
   is bundled or downloaded by the app.
+- **Port tab**: imports the generated port's data pack (`.zip`) into
+  `/sdcard/HogwartsLegacy-data`, checks the All-files permission, launches the
+  game's `libdmhost.so` as a `NativeActivity`, and exports `log.txt` /
+  `log.prev.txt`. The APK carries the host and Turnip as native libraries; it
+  carries no game data.
 
 ## What is deliberately out of scope (yet)
 

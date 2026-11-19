@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
 
 private enum class Tab(val labelRes: Int) {
     LIBRARY(R.string.tab_library),
+    PORT(R.string.tab_port),
     IMPORT(R.string.tab_import),
     SETTINGS(R.string.tab_settings),
     LOGS(R.string.tab_logs),
@@ -110,6 +112,7 @@ private fun AppRoot(
                             Icon(
                                 imageVector = when (item) {
                                     Tab.LIBRARY -> Icons.Default.List
+                                    Tab.PORT -> Icons.Default.PlayArrow
                                     Tab.IMPORT -> Icons.Default.Add
                                     Tab.SETTINGS -> Icons.Default.Settings
                                     Tab.LOGS -> Icons.Default.Info
@@ -151,6 +154,8 @@ private fun AppRoot(
                         }
                     },
                 )
+
+                Tab.PORT -> PortScreen()
 
                 Tab.IMPORT -> ImportScreen(
                     repository = repository,

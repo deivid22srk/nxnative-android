@@ -9,7 +9,7 @@ Updated 2026-11-19.
 | **L0** | CI builds the APK | **done** — earlier green run [44563384561](https://github.com/deivid22srk/nxnative-android/actions/runs/44563384561); the new build is re-verified by CI on push. Native tests, debug APK, CI-signed release APK, APK content verification (`arm64-v8a` only, minSdk 29, targetSdk 35, no game/key entries). |
 | **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented and host-tested; run against the user's real `hl.nsp` (title id `0100F7E00C70E000`, generation 16, content keys verified: ticket title key with `titlekek_10`, NCA header `NCA3`, content type 0). **Not exercised on a physical device**: no Android device is attached to this machine. |
 | **L2** | Extraction + NSO rewrite completes on the device | **partially implemented, not verified on a phone**. The app decrypts the program NCA's CTR sections with the ticket title key and extracts **RomFS + ExeFS** on-device, under a foreground service. NSO rewriting is still missing. The extraction core was verified on the PC against the real `hl.nsp` (185 RomFS files, 7.247 GB; 7 ExeFS files, 72.8 MB); the new RomFS pass has not been run on the user's phone yet. |
-| L3 | Runtime reaches the game's first `main()` | **not verified / not implemented** |
+| L3 | Runtime reaches the game's first `main()` | **reached on the user's device with the generated port**: the host loaded the modules, fixed the heap (`mem_reserve 0x1128000000`, `app_pool 0xCD500000`) and launched; the standalone port opened on a Motorola Edge 30 Fusion. The Port tab now launches the same host inside this app. |
 | L4 | First game frame via Vulkan | **not verified**. A standalone Vulkan present loop (clear + present) is implemented in the player shell; it is not the game's renderer. The screen can load a user-supplied Turnip driver through libadrenotools, but no driver was tested here. |
 | L5 | Menu / playable | **not verified** |
 
@@ -73,6 +73,11 @@ verified the ticket and the program NCA header on the PC.
   progress/cancel, resumable extraction, report/manifest export, and
   libadrenotools (BSD-2) with Turnip `.zip` import/selection. **Not yet run on
   a phone**; the `RUNTIME` stage is explicitly `SKIPPED`.
+- 2026-11-19 — Port tab added: the generated host (`libdmhost.so`) is packaged
+  in this app, Turnip is bundled, the data pack is imported through SAF into
+  `/sdcard/HogwartsLegacy-data`, and the game launches as a `NativeActivity`.
+  The on-device log can be exported from the app. **Not yet exercised in this
+  app build** (the standalone generated APK was the one tested).
 - 2026-11-19 — real-data RomFS/ExeFS probe (PC, `hl.nsp` + `prod2.keys`):
   NCA `NCA3`, content type 0, title `0100F7E00C70E000`, sections 1/1/1/0;
   **RomFS 185 files / 7.247 GB**, **ExeFS 7 files / 72.8 MB** (`main`, `sdk`,

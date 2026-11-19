@@ -10,6 +10,7 @@
     <string name="terms_accept">Aceito e continuar</string>
 
     <string name="tab_library">Biblioteca</string>
+    <string name="tab_port">Jogo</string>
     <string name="tab_import">Importar</string>
     <string name="tab_settings">Ajustes</string>
     <string name="tab_logs">Diagnóstico</string>
@@ -58,6 +59,20 @@
     <string name="delete_all_title">Apagar todos os dados?</string>
     <string name="delete_all_body">Isto remove todas as cópias de jogos do armazenamento do aplicativo. As ROMs e chaves originais não são tocadas.</string>
     <string name="settings_runtime_note">Estas opções serão aplicadas quando o runtime do jogo (M4) estiver integrado. Hoje a tela de jogo mostra apenas o caminho de apresentação Vulkan e o diagnóstico da GPU.</string>
+
+    <string name="port_title">Runtime do port</string>
+    <string name="port_body">Importe o data pack do port (.zip) e inicie o jogo pelo app. Os dados ficam em /sdcard/HogwartsLegacy-data; nada de jogo é embutido no APK.</string>
+    <string name="port_ready">Dados do port encontrados</string>
+    <string name="port_missing">Data pack ainda não importado</string>
+    <string name="port_import">Importar data pack (.zip)</string>
+    <string name="port_grant_access">Conceder acesso a todos os arquivos</string>
+    <string name="port_play">Iniciar Hogwarts Legacy</string>
+    <string name="port_export_log">Exportar log do runtime</string>
+    <string name="port_import_ok">Importado: %1$d arquivos, %2$s</string>
+    <string name="port_import_failed">Falha ao importar: %1$s</string>
+    <string name="port_launch_failed">Falha ao iniciar: %1$s</string>
+    <string name="port_files">arquivos</string>
+    <string name="port_note">O runtime usa o libdmhost.so e o Turnip embutidos, e lê mods/RomFS/shaders da pasta pública. Se o jogo fechar, exporte o log e envie para análise.</string>
 
     <string name="logs_note">Somente nomes, tamanhos, Title IDs e códigos de erro. Nunca valores de chaves nem conteúdo do jogo.</string>
     <string name="export_logs">Exportar</string>
