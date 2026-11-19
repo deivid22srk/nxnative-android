@@ -17,9 +17,9 @@ the screen does not lose the progress.
 |---|---|---|
 | `VERIFY` | PFS0 header/table, ticket rights ID → title ID + key generation, key coverage, free-space check | `nsp.cpp`, `import_check.cpp` |
 | `KEYS` | `titlekek_<gen>` decrypts the ticket title-key block (AES-128-ECB); `header_key` decrypts the program NCA header (AES-128-XTS, big-endian sector units) and the magic is checked (`NCA3`) | `crypto.cpp`, `content_check.cpp` |
-| `EXTRACT` | every entry is copied out of the NSP into `files/build/<titleId>/extracted/`, in 16 MB chunks, resumable and cancellable, with a manifest | `PortPipeline.kt` + `Native.copyRange` |
+| `EXTRACT` | the program NCA is opened, its CTR sections are decrypted with the ticket title key and **RomFS + ExeFS are written** under `files/build/<titleId>/{romfs,exefs}/` | `nca.cpp` + `Native.extractGameData` |
 | `SHADERS` | **`SKIPPED`** — Oodle shader decode and Maxwell→SPIR-V translation are not embedded in this build | — |
-| `REPORT` | `build-report.json` with device, container, key-check results, stage states and limitations | `PortPipeline.kt` |
+| `REPORT` | `build-report.json` with device, container, key-check results, RomFS/ExeFS counts, stage states and limitations | `PortPipeline.kt` |
 | `RUNTIME` | **`SKIPPED`** — the nx2android host/profile is not embedded in this build | — |
 
 Neither `SHADERS` nor `RUNTIME` is ever reported as done. `build-report.json`
@@ -31,9 +31,8 @@ all stages before writing the JSON.
 
 ## What is still missing for a playable port
 
-1. **NCA section decryption** and IVFC/RomFS/ExeFS parsing. The app verifies
-   the key material and copies the container, but does not yet expose the
-   RomFS tree.
+1. **NSO rewriting.** The ExeFS is extracted (`main`, `sdk`, `subsdk0`,
+   `rtld`, `main.npdm`, ...), but the modules are not rewritten yet.
 2. **Oodle shader decode.** This one is *easier* on the phone than on a PC,
    because the app itself is an ARM64 Android process: the game's own
    `OodleLZ_Decompress` can run in-process. It still needs the module loader

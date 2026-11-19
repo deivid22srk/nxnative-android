@@ -27,6 +27,7 @@ add_library(nx2a_core STATIC
     import_check.cpp
     crypto.cpp
     content_check.cpp
+    nca.cpp
 )
 target_include_directories(nx2a_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

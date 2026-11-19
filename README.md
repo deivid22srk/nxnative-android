@@ -49,8 +49,8 @@ data, and the app never downloads anything.**
   not the game renderer.
 - **On-device preparation** from the library ("Preparar"): foreground service
   with stage/percentage in the notification plus a cancel action, wake lock,
-  content-key verification (ticket + NCA header), resumable NSP extraction,
-  manifest and `build-report.json`.
+  content-key verification (ticket + NCA header), **NCA CTR decryption and
+  RomFS/ExeFS extraction**, manifest and `build-report.json`.
 - **Export** of the report/manifest/logs as a `.zip` through the system file
   picker (the multi-GB extracted data stays in private storage and is not
   zipped).
@@ -61,10 +61,10 @@ data, and the app never downloads anything.**
 ## What is deliberately out of scope (yet)
 
 `.nsz`, `.xcz` and `.xci` are rejected with a clear message (the PC porter can
-convert them). **Section-level NCA decryption and RomFS/ExeFS extraction**,
-NSO rewriting, SPIR-V translation and the NVN→Vulkan backend are milestones
-M3–M4. The preparation pipeline copies the container's entries; it does not
-claim to produce a playable runtime.
+convert them). **NSO rewriting, Oodle shader decoding, SPIR-V translation and
+the NVN→Vulkan backend** are still milestones M3–M4. The preparation pipeline
+now decrypts the RomFS/ExeFS, but it does not claim to produce a playable
+runtime.
 
 ## Build
 

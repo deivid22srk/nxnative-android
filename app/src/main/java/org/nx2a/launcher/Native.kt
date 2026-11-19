@@ -16,6 +16,19 @@ object Native {
     external fun loadKeys(path: String): String
     external fun analyzeImport(fd: Int, keysPath: String): String
     external fun verifyContentKeys(nspPath: String, keysPath: String): String
+
+    fun interface GameDataProgress {
+        fun onProgress(done: Long, total: Long)
+    }
+
+    external fun extractGameData(
+        nspPath: String,
+        keysPath: String,
+        romfsDir: String,
+        exefsDir: String,
+        progress: GameDataProgress,
+    ): String
+    external fun cancelGameData()
     external fun copyRange(
         fd: Int,
         srcOffset: Long,

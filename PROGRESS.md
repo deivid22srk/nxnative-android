@@ -8,7 +8,7 @@ Updated 2026-11-19.
 |---|---|---|
 | **L0** | CI builds the APK | **done** — earlier green run [44563384561](https://github.com/deivid22srk/nxnative-android/actions/runs/44563384561); the new build is re-verified by CI on push. Native tests, debug APK, CI-signed release APK, APK content verification (`arm64-v8a` only, minSdk 29, targetSdk 35, no game/key entries). |
 | **L1** | App opens, shows the Terms, imports and validates NSP + keys | implemented and host-tested; run against the user's real `hl.nsp` (title id `0100F7E00C70E000`, generation 16, content keys verified: ticket title key with `titlekek_10`, NCA header `NCA3`, content type 0). **Not exercised on a physical device**: no Android device is attached to this machine. |
-| **L2** | Extraction + NSO rewrite completes on the device | **partially implemented, not verified**. The app has an on-device foreground preparation service that extracts the NSP entries (PFS0) with resume/progress and verifies the content keys. It does **not** decrypt NCA sections, extract RomFS/ExeFS or rewrite NSOs, and no run was made on a phone. |
+| **L2** | Extraction + NSO rewrite completes on the device | **partially implemented, not verified on a phone**. The app decrypts the program NCA's CTR sections with the ticket title key and extracts **RomFS + ExeFS** on-device, under a foreground service. NSO rewriting is still missing. The extraction core was verified on the PC against the real `hl.nsp` (185 RomFS files, 7.247 GB; 7 ExeFS files, 72.8 MB); the new RomFS pass has not been run on the user's phone yet. |
 | L3 | Runtime reaches the game's first `main()` | **not verified / not implemented** |
 | L4 | First game frame via Vulkan | **not verified**. A standalone Vulkan present loop (clear + present) is implemented in the player shell; it is not the game's renderer. The screen can load a user-supplied Turnip driver through libadrenotools, but no driver was tested here. |
 | L5 | Menu / playable | **not verified** |
@@ -34,12 +34,12 @@ verified the ticket and the program NCA header on the PC.
       report, private-storage copy with progress/cancel, library, settings,
       delete, diagnostics/log export, player shell with Vulkan.
 - [x] **M2 (partial)** — foreground build service + notification progress and
-      cancel, wake lock, resumable PFS0 extraction driven chunk by chunk,
-      content-key verification (AES-128 ECB ticket / XTS NCA header, verified
-      against real NCA headers), manifest/report export, libadrenotools +
-      Turnip `.zip` import/selection. **Still missing:** NCA section
-      decryption, RomFS/ExeFS parsing, NSO rewrite.
-- [ ] **M3** — on-device NCA/RomFS/ExeFS/LZ4 extraction and NSO rewrite.
+      cancel, wake lock, content-key verification (AES-128 ECB ticket / XTS NCA
+      header, verified against real NCA headers), **NCA CTR section decryption,
+      RomFS/ExeFS extraction**, manifest/report export, libadrenotools +
+      Turnip `.zip` import/selection.
+- [ ] **M3** — NSO rewrite (the ExeFS is already extracted); Oodle shader decode
+      and SPIR-V translation remain blocked on the nx2android host/translator.
 - [ ] **M4** — vendor the nx2android runtime (`dm/android`, `dm/host`,
       shader translator products) and load the rewritten NSOs.
 - [ ] **M5** — audio/input/saves/performance.
@@ -73,6 +73,13 @@ verified the ticket and the program NCA header on the PC.
   progress/cancel, resumable extraction, report/manifest export, and
   libadrenotools (BSD-2) with Turnip `.zip` import/selection. **Not yet run on
   a phone**; the `RUNTIME` stage is explicitly `SKIPPED`.
+- 2026-11-19 — real-data RomFS/ExeFS probe (PC, `hl.nsp` + `prod2.keys`):
+  NCA `NCA3`, content type 0, title `0100F7E00C70E000`, sections 1/1/1/0;
+  **RomFS 185 files / 7.247 GB**, **ExeFS 7 files / 72.8 MB** (`main`, `sdk`,
+  `subsdk0`, `rtld`, `main.npdm`, ...). The key was two details: the titlekek
+  index is the NCA header generation **minus one** (`titlekek_0f` here), and
+  the CTR lower IV uses the section's **NCA-relative** offset. No key value or
+  file name was printed by the test.
 - 2026-11-19 — the user ran it on a Motorola Edge 30 Fusion (Android 14):
   6.83 GB extracted in 94 s, content keys verified, Turnip driver imported.
   The exported report exposed a serialisation bug (it was written while

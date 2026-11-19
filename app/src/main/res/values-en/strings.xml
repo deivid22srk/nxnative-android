@@ -43,7 +43,7 @@
     <string name="missing_keys_stop">Nothing was copied. Update prod.keys from your own console to a version that includes the required generation and try again. This app does not download keys.</string>
     <string name="import_done_title">Import complete</string>
     <string name="import_done_body">%1$s (%2$s) is in the app private storage.</string>
-    <string name="prepare_pending">Preparing the game (extraction, decryption and module rewriting) is the project next milestone (M3) and is not part of this version.</string>
+    <string name="prepare_pending">Use "Prepare" in the library to decrypt and extract RomFS + ExeFS on the device. The runtime and shader translation are not included yet.</string>
     <string name="open_library">Open the library</string>
     <string name="import_scope_note">This version validates the ROM and keys and copies the file once. It supports .nsp; .nsz, .xcz and .xci are rejected with a clear message.</string>
 
@@ -98,7 +98,7 @@
     <string name="build_failed_title">Preparation failed</string>
     <string name="build_cancelled_title">Preparation cancelled</string>
     <string name="build_other_running">Another game is being prepared: %1$s</string>
-    <string name="build_honest_note">This build validates the container, verifies the content keys and extracts the NSP on the device itself, with progress and resume. Shader translation and the game runtime (nx2android) are not embedded yet: the RUNTIME stage is shown as skipped, never as done.</string>
+    <string name="build_honest_note">This build validates the container, verifies the keys, decrypts and extracts RomFS + ExeFS on the device itself, with progress and cancellation. Oodle decoding, shader translation and the game runtime (nx2android) are not embedded yet: the SHADERS and RUNTIME stages are shown as skipped, never as done.</string>
     <string name="build_keys_ok">Content keys verified · NCA %1$s · type %2$d</string>
     <string name="build_start">Start preparation</string>
     <string name="build_restart">Prepare again</string>
@@ -110,7 +110,7 @@
 
     <string name="stage_verify">Validate the container and free space</string>
     <string name="stage_keys">Verify the content keys</string>
-    <string name="stage_extract">Extract the NSP entries</string>
+    <string name="stage_extract">Decrypt and extract RomFS + ExeFS</string>
     <string name="stage_shaders">Decode Oodle and translate shaders</string>
     <string name="stage_report">Write the report and manifest</string>
     <string name="stage_runtime">Translate shaders and assemble the runtime</string>

@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -15,12 +16,14 @@
 #include "content_check.h"
 #include "import_check.h"
 #include "keys.h"
+#include "nca.h"
 #include "nsp.h"
 #include "vulkan_present.h"
 
 namespace {
 
 constexpr const char* kTag = "nxnative-android";
+std::atomic<bool> gGameDataCancel{false};
 
 jstring toJava(JNIEnv* env, const std::string& text) {
     return env->NewStringUTF(text.c_str());
@@ -161,6 +164,74 @@ Java_org_nx2a_launcher_Native_copyRange(JNIEnv* env, jobject /*thiz*/, jint fd, 
     // resume tolerates a partial tail. The file is closed (flushed) here.
     ::close(out);
     return static_cast<jlong>(done);
+}
+
+JNIEXPORT void JNICALL
+Java_org_nx2a_launcher_Native_cancelGameData(JNIEnv* /*env*/, jobject /*thiz*/) {
+    gGameDataCancel.store(true);
+}
+
+// Extracts the decrypted RomFS and ExeFS. The progress object's onProgress(JJ)
+// is called on this thread; the Kotlin side drives the notification from it.
+JNIEXPORT jstring JNICALL
+Java_org_nx2a_launcher_Native_extractGameData(JNIEnv* env, jobject /*thiz*/, jstring nspPath,
+                                              jstring keysPath, jstring romfsDir,
+                                              jstring exefsDir, jobject progress) {
+    auto text = [env](jstring value) {
+        const char* raw = value ? env->GetStringUTFChars(value, nullptr) : nullptr;
+        std::string out = raw ? raw : "";
+        if (raw) env->ReleaseStringUTFChars(value, raw);
+        return out;
+    };
+    const std::string nsp = text(nspPath);
+    const std::string keysPathStr = text(keysPath);
+    const std::string romfs = text(romfsDir);
+    const std::string exefs = text(exefsDir);
+
+    nx2a::KeySet keys;
+    std::string error;
+    if (!keys.loadFile(keysPathStr, &error)) {
+        return toJava(env, "{\"ok\":false,\"error\":\"" + jsonString(error) + "\"}");
+    }
+    gGameDataCancel.store(false);
+
+    jclass cls = progress ? env->GetObjectClass(progress) : nullptr;
+    jmethodID onProgress =
+        cls ? env->GetMethodID(cls, "onProgress", "(JJ)V") : nullptr;
+    auto report = [&](std::uint64_t done, std::uint64_t total) {
+        if (onProgress) {
+            env->CallVoidMethod(progress, onProgress, static_cast<jlong>(done),
+                                static_cast<jlong>(total));
+            if (env->ExceptionCheck()) env->ExceptionClear();
+        }
+    };
+    auto cancelled = [] { return gGameDataCancel.load(); };
+
+    nx2a::RomfsListing romfsListing;
+    nx2a::ExefsListing exefsListing;
+    const bool romfsOk = nx2a::extractRomfs(nsp, keys, romfs, report, cancelled, &romfsListing);
+    bool exefsOk = false;
+    if (romfsOk && !cancelled()) {
+        exefsOk = nx2a::extractExefs(nsp, keys, exefs, report, cancelled, &exefsListing);
+    }
+    const bool ok = romfsOk && exefsOk;
+    const std::string detail = !romfsOk ? romfsListing.error
+                              : !exefsOk ? exefsListing.error
+                                         : "";
+    std::ostringstream j;
+    j << "{\"ok\":" << (ok ? "true" : "false") << ",\"error\":\"" << jsonString(detail)
+      << "\",\"romfsFiles\":" << romfsListing.files.size()
+      << ",\"romfsBytes\":" << romfsListing.totalBytes
+      << ",\"exefsFiles\":" << exefsListing.files.size()
+      << ",\"exefsBytes\":" << exefsListing.totalBytes
+      << ",\"cancelled\":" << (cancelled() ? "true" : "false") << '}';
+    __android_log_print(ANDROID_LOG_INFO, kTag,
+                        "game data: ok=%d romfs=%zu/%llu exefs=%zu/%llu", ok ? 1 : 0,
+                        romfsListing.files.size(),
+                        static_cast<unsigned long long>(romfsListing.totalBytes),
+                        exefsListing.files.size(),
+                        static_cast<unsigned long long>(exefsListing.totalBytes));
+    return toJava(env, j.str());
 }
 
 JNIEXPORT jstring JNICALL

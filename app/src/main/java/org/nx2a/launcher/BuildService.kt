@@ -55,6 +55,7 @@ class BuildService : Service() {
         when (intent?.action) {
             ACTION_CANCEL -> {
                 Logs.add("build", "cancel requested")
+                runCatching { Native.cancelGameData() }
                 val current = BuildManager.state.value
                 if (current != null && current.running) {
                     BuildManager.publish(

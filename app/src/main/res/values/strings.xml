@@ -44,7 +44,7 @@
     <string name="missing_keys_stop">Nada foi copiado. Atualize o seu prod.keys a partir do seu próprio console para uma versão que inclua a geração exigida e tente de novo. Este aplicativo não baixa chaves.</string>
     <string name="import_done_title">Importação concluída</string>
     <string name="import_done_body">%1$s (%2$s) está no armazenamento privado do aplicativo.</string>
-    <string name="prepare_pending">A preparação do jogo (extração, descriptografia e reescrita dos módulos) é o próximo marco do projeto (M3) e ainda não está incluída nesta versão.</string>
+    <string name="prepare_pending">Use \"Preparar\" na biblioteca para descriptografar e extrair RomFS + ExeFS no aparelho. O runtime e a tradução de shaders ainda não estão incluídos.</string>
     <string name="open_library">Abrir a biblioteca</string>
     <string name="import_scope_note">Esta versão valida a ROM e as chaves e copia o arquivo uma única vez. Suporta .nsp; .nsz, .xcz e .xci são rejeitados com uma mensagem clara.</string>
 
@@ -99,7 +99,7 @@
     <string name="build_failed_title">Preparação falhou</string>
     <string name="build_cancelled_title">Preparação cancelada</string>
     <string name="build_other_running">Outro jogo está sendo preparado: %1$s</string>
-    <string name="build_honest_note">Este build valida o contêiner, verifica as chaves de conteúdo e extrai o NSP no próprio aparelho, com progresso e retomada. A tradução dos shaders e o runtime do jogo (nx2android) ainda não estão embutidos: a etapa RUNTIME aparece como ignorada, nunca como concluída.</string>
+    <string name="build_honest_note">Este build valida o contêiner, verifica as chaves, descriptografa e extrai RomFS + ExeFS no próprio aparelho, com progresso e cancelamento. A decodificação Oodle, a tradução dos shaders e o runtime do jogo (nx2android) ainda não estão embutidos: as etapas SHADERS e RUNTIME aparecem como ignoradas, nunca como concluídas.</string>
     <string name="build_keys_ok">Chaves de conteúdo verificadas · NCA %1$s · tipo %2$d</string>
     <string name="build_start">Iniciar preparação</string>
     <string name="build_restart">Preparar de novo</string>
@@ -111,7 +111,7 @@
 
     <string name="stage_verify">Validar contêiner e espaço</string>
     <string name="stage_keys">Verificar chaves de conteúdo</string>
-    <string name="stage_extract">Extrair as entradas do NSP</string>
+    <string name="stage_extract">Descriptografar e extrair RomFS + ExeFS</string>
     <string name="stage_shaders">Decodificar Oodle e traduzir shaders</string>
     <string name="stage_report">Gerar relatório e manifesto</string>
     <string name="stage_runtime">Traduzir shaders e montar o runtime</string>

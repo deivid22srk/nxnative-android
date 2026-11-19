@@ -6,8 +6,6 @@ import android.os.ParcelFileDescriptor
 import android.os.StatFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -51,6 +49,8 @@ class PortPipeline(private val context: Context) {
     private var headerMagic = ""
     private var contentType = -1
     private var reportPath = ""
+    private var romfsFiles = 0
+    private var exefsFiles = 0
 
     private lateinit var buildDir: File
     private lateinit var logFile: File
@@ -59,6 +59,9 @@ class PortPipeline(private val context: Context) {
         withContext(Dispatchers.IO) {
             val startedAt = System.currentTimeMillis()
             buildDir = File(File(context.filesDir, "build"), game.titleId).apply { mkdirs() }
+            // Older builds copied the encrypted NCA entries; that is no longer
+            // useful and would waste ~7 GB next to the decrypted tree.
+            runCatching { File(buildDir, "extracted").deleteRecursively() }
             logFile = File(buildDir, "build.log")
             log("build", "start ${game.titleId} (${game.name})")
             var snapshot = BuildSnapshot(
@@ -221,69 +224,64 @@ class PortPipeline(private val context: Context) {
 
     private suspend fun extract(report: ImportReport, emit: () -> Unit) {
         stages[BuildStageId.EXTRACT] = BuildStageState(
-            BuildStageId.EXTRACT, StageState.ACTIVE, "extracting entries", 0f,
+            BuildStageId.EXTRACT, StageState.ACTIVE, "decrypting RomFS + ExeFS", 0f,
         )
         emit()
 
         val nsp = ImportRepository(context).nspFile(report.titleId)
-        val outDir = File(buildDir, "extracted").apply { mkdirs() }
-        val manifest = StringBuilder("name\tkind\tsize\toffset\n")
-        val used = mutableSetOf<String>()
-        var files = 0
+        val keys = File(ImportRepository(context).keysDir(), "prod.keys").absolutePath
+        val romfs = File(buildDir, "romfs").apply { mkdirs() }
+        val exefs = File(buildDir, "exefs").apply { mkdirs() }
 
-        ParcelFileDescriptor.open(nsp, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
-            for ((index, entry) in report.entries.withIndex()) {
-                currentCoroutineContext().ensureActive()
-                if (entry.size <= 0) continue
-                val safe = safeName(entry.name, index, used)
-                val dest = File(outDir, safe)
-                var done = if (dest.isFile && dest.length() in 1..entry.size) dest.length() else 0L
-                if (dest.isFile && dest.length() > entry.size) {
-                    dest.delete()
-                    done = 0L
-                }
-                if (done > 0) extractedBytes += done  // resumed bytes count too
-                while (done < entry.size) {
-                    currentCoroutineContext().ensureActive()
-                    val want = minOf(CHUNK, entry.size - done)
-                    val copied = Native.copyRange(
-                        pfd.fd,
-                        entry.offset + done,
-                        want,
-                        dest.absolutePath,
-                        done > 0,
-                    )
-                    if (copied != want) {
-                        throw BuildFailure(
-                            "ERR_IO",
-                            "extraction of ${entry.name} stopped at $done of ${entry.size} bytes",
-                        )
-                    }
-                    done += copied
-                    extractedBytes += copied
-                    val p = if (totalBytes > 0) {
-                        (extractedBytes.toFloat() / totalBytes).coerceIn(0f, 1f)
-                    } else 0f
+        val result = JSONObject(
+            Native.extractGameData(
+                nsp.absolutePath,
+                keys,
+                romfs.absolutePath,
+                exefs.absolutePath,
+            ) { done, nativeTotal ->
+                // RomFS reports its total; the small ExeFS pass reports 0.
+                if (nativeTotal > 0) {
+                    totalBytes = nativeTotal
+                    extractedBytes = done
+                    val p = (done.toFloat() / nativeTotal).coerceIn(0f, 1f)
                     stages[BuildStageId.EXTRACT] = BuildStageState(
                         BuildStageId.EXTRACT, StageState.ACTIVE,
-                        "${index + 1}/${report.entries.size} · ${humanSize(extractedBytes)} / " +
-                            humanSize(totalBytes),
+                        "${humanSize(done)} / ${humanSize(nativeTotal)} · RomFS",
                         p,
                     )
                     emit()
                 }
-                manifest.append(safe).append('\t').append(entry.kind).append('\t')
-                    .append(entry.size).append('\t').append(entry.offset).append('\n')
-                files++
-            }
+            },
+        )
+        if (!result.optBoolean("ok")) {
+            if (result.optBoolean("cancelled")) throw kotlinx.coroutines.CancellationException("cancelled")
+            throw BuildFailure(
+                "ERR_EXTRACT",
+                result.optString("error").ifBlank { "RomFS/ExeFS extraction failed" },
+            )
         }
-
+        extractedBytes = result.optLong("romfsBytes") + result.optLong("exefsBytes")
+        totalBytes = extractedBytes
+        romfsFiles = result.optInt("romfsFiles")
+        exefsFiles = result.optInt("exefsFiles")
+        val files = romfsFiles + exefsFiles
+        val manifest = StringBuilder("name\tkind\tsize\toffset\n")
+        for (entry in report.entries) {
+            manifest.append(entry.name.replace('\t', '_')).append('\t')
+                .append(entry.kind).append('\t').append(entry.size).append('\t')
+                .append(entry.offset).append('\n')
+        }
         File(buildDir, "manifest.tsv").writeText(manifest.toString())
         stages[BuildStageId.EXTRACT] = BuildStageState(
             BuildStageId.EXTRACT, StageState.DONE,
-            "$files files · ${humanSize(extractedBytes)}", 1f,
+            "$files files (RomFS + ExeFS) · ${humanSize(extractedBytes)}", 1f,
         )
-        log("extract", "$files files, $extractedBytes bytes")
+        log(
+            "extract",
+            "romfs=${result.optInt("romfsFiles")} exefs=${result.optInt("exefsFiles")} " +
+                "bytes=$extractedBytes",
+        )
         emit()
     }
 
@@ -366,9 +364,12 @@ class PortPipeline(private val context: Context) {
             put(
                 "pipeline",
                 JSONObject().apply {
-                    put("status", "CONTAINER_EXTRACTED")
+                    put("status", "GAME_DATA_EXTRACTED")
                     put("extractedBytes", extractedBytes)
-                    put("files", report.entries.size)
+                    put("containerEntries", report.entries.size)
+                    put("romfsFiles", romfsFiles)
+                    put("exefsFiles", exefsFiles)
+                    put("decrypted", true)
                     put("runtimeIncluded", false)
                     put("shadersDecoded", false)
                     put("shadersTranslated", false)
@@ -379,9 +380,9 @@ class PortPipeline(private val context: Context) {
             put(
                 "limitations",
                 JSONArray().apply {
-                    put("This build extracts and verifies the container; it does not embed the Oodle shader decode, the SPIR-V translator or the nx2android host.")
+                    put("RomFS and ExeFS are decrypted with the ticket title key and written to private storage.")
+                    put("This build does not embed the Oodle shader decode, the SPIR-V translator or the nx2android host.")
                     put("SHADERS and RUNTIME are SKIPPED: neither is a success and neither is reported as one.")
-                    put("The extracted entries are still encrypted NCA/CNMT/ticket files, not a playable game tree.")
                 },
             )
         }
@@ -450,19 +451,6 @@ class PortPipeline(private val context: Context) {
         return value.coerceIn(0f, 1f)
     }
 
-    private fun safeName(raw: String, index: Int, used: MutableSet<String>): String {
-        var name = raw.substringAfterLast('/').substringAfterLast('\\')
-        name = name.replace(Regex("[^A-Za-z0-9._-]"), "_")
-        if (name.isBlank() || name == "." || name == "..") name = "entry-$index"
-        var candidate = name
-        var n = 1
-        while (!used.add(candidate)) {
-            candidate = "$index-$n-$name"
-            n++
-        }
-        return candidate
-    }
-
     private fun log(tag: String, message: String) {
         val line = "${isoNow()} [$tag] $message"
         Logs.add(tag, message)
@@ -472,7 +460,4 @@ class PortPipeline(private val context: Context) {
     private fun isoNow(): String =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US).format(Date())
 
-    companion object {
-        private const val CHUNK = 16L shl 20
-    }
 }
